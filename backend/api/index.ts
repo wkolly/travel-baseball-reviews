@@ -1,89 +1,62 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Load environment variables
-dotenv.config();
+export default function handler(req: VercelRequest, res: VercelResponse) {
+  // Set CORS headers
+  const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+  
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-// Import routes
-import authRoutes from '../src/routes/auth';
-import teamRoutes from '../src/routes/teams';
-import reviewRoutes from '../src/routes/reviews';
-import tournamentRoutes from '../src/routes/tournaments';
-import tournamentReviewRoutes from '../src/routes/tournamentReviews';
-import adminRoutes from '../src/routes/admin';
-import chatRoutes from '../src/routes/chat';
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-// Import middleware
-import { errorHandler } from '../src/middleware/errorHandler';
+  // Basic routing
+  const { url } = req;
+  
+  if (url === '/' || url === '') {
+    return res.json({
+      message: 'Travel Baseball Reviews API',
+      status: 'OK',
+      version: '1.0.0',
+      frontend_url: process.env.FRONTEND_URL,
+      database_url: process.env.DATABASE_URL ? 'Connected' : 'Not configured',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        health: '/api/health',
+        teams: '/api/teams',
+        tournaments: '/api/tournaments',
+        reviews: '/api/reviews'
+      }
+    });
+  }
 
-const app = express();
+  if (url === '/health' || url === '/api/health') {
+    return res.json({
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development'
+    });
+  }
 
-// CORS configuration
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
+  // Temporary response for all API routes
+  if (url?.startsWith('/api/')) {
+    return res.json({
+      message: 'API endpoint temporarily unavailable',
+      path: url,
+      method: req.method,
+      status: 'maintenance'
+    });
+  }
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-
-// Middleware
-app.use(helmet());
-app.use(compression());
-app.use(cors(corsOptions));
-app.use(limiter);
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Travel Baseball Reviews API', 
-    status: 'OK',
-    version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      teams: '/api/teams',
-      tournaments: '/api/tournaments', 
-      reviews: '/api/reviews',
-      auth: '/api/auth',
-      admin: '/api/admin'
-    }
-  });
-});
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/teams', teamRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/tournaments', tournamentRoutes);
-app.use('/api/tournament-reviews', tournamentReviewRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/chat', chatRoutes);
-
-// Error handling middleware (must be last)
-app.use(errorHandler);
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    success: false, 
+  // 404 for other routes
+  return res.status(404).json({
+    success: false,
     message: 'Route not found',
-    path: req.originalUrl
+    path: url
   });
-});
-
-export default app;
+}

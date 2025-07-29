@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Travel Baseball Reviews API</title>
+</head>
+<body>
+    <h1>Travel Baseball Reviews API</h1>
+    <p>This is the backend API. Visit the main site for the frontend.</p>
+    <p>API Status: <span id="status">Checking...</span></p>
+    <script>
+        fetch('/api')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('status').textContent = data.status;
+            })
+            .catch(() => {
+                document.getElementById('status').textContent = 'Error';
+            });
+    </script>
+</body>
+</html>

@@ -1,6 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default function handler(req: any, res: any) {
   // Set CORS headers
   const allowedOrigin = process.env.FRONTEND_URL || 'https://travel-baseball-reviews-frontend.vercel.app';
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
@@ -22,6 +20,6 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     url: req.url,
     frontend_url: process.env.FRONTEND_URL,
     database_configured: !!process.env.DATABASE_URL,
-    note: 'Backend deployed successfully - API endpoints coming soon'
+    note: 'Backend deployed successfully - CORS configured'
   });
 }

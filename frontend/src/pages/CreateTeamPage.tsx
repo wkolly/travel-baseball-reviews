@@ -32,7 +32,7 @@ const CreateTeamPage: React.FC = () => {
   } = useForm<CreateTeamRequest>();
 
   const createTeamMutation = useMutation(teamsAPI.createTeam, {
-    onSuccess: (response) => {
+    onSuccess: () => {
       toast.success('Thanks! Your team suggestion is under review.');
       queryClient.invalidateQueries('teams');
       navigate('/teams');

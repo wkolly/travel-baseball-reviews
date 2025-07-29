@@ -5,18 +5,6 @@ import { useTeam } from '@/hooks/useTeams';
 import { useTeamReviews, useCreateReview } from '@/hooks/useReviews';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
-interface Review {
-  id: string;
-  userId: string;
-  coaching_rating: number;
-  value_rating: number;
-  organization_rating: number;
-  playing_time_rating: number;
-  overall_rating: number;
-  comment?: string;
-  createdAt: string;
-}
-
 const TeamDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -39,7 +27,7 @@ const TeamDetailPage: React.FC = () => {
 
   const team = teamResponse.data;
   const reviews = reviewsResponse?.data?.reviews || [];
-  const averageRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.overall_rating, 0) / reviews.length : 0;
+  const averageRating = reviews.length > 0 ? reviews.reduce((sum: number, r: any) => sum + r.overall_rating, 0) / reviews.length : 0;
   
   // Parse ageGroups from JSON string to array with error handling
   const ageGroups = (() => {
@@ -183,7 +171,7 @@ const TeamDetailPage: React.FC = () => {
                       type="button"
                       onClick={() => handleRatingChange(key, rating)}
                       className={`transition-colors ${
-                        rating <= reviewForm[key as keyof typeof reviewForm]
+                        rating <= Number(reviewForm[key as keyof typeof reviewForm])
                           ? 'text-yellow-400'
                           : 'text-gray-300 hover:text-yellow-400'
                       }`}
@@ -239,7 +227,7 @@ const TeamDetailPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {reviews.map((review: any) => (
               <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
                 <div className="flex justify-between items-start mb-3">
                   <div>

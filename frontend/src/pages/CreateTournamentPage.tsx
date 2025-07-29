@@ -19,7 +19,7 @@ const CreateTournamentPage: React.FC = () => {
   } = useForm<CreateTournamentRequest>();
 
   const createTournamentMutation = useMutation(tournamentsAPI.createTournament, {
-    onSuccess: (response) => {
+    onSuccess: () => {
       toast.success('Tournament created successfully!');
       queryClient.invalidateQueries('tournaments');
       navigate('/tournaments');

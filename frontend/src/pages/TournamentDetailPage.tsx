@@ -58,6 +58,7 @@ const TournamentDetailPage: React.FC = () => {
 
   const tournament = tournamentData.data;
   const reviews: TournamentReview[] = reviewsData?.data?.reviews || [];
+  const avgRating = reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.overall_rating, 0) / reviews.length : 0;
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +106,7 @@ const TournamentDetailPage: React.FC = () => {
                     <Star
                       key={i}
                       className={`h-6 w-6 ${
-                        i < Math.floor(tournament.avgRating)
+                        i < Math.floor(avgRating)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
                       }`}
@@ -113,11 +114,11 @@ const TournamentDetailPage: React.FC = () => {
                   ))}
                 </div>
                 <span className="ml-3 text-lg text-gray-600">
-                  {tournament.avgRating.toFixed(1)} out of 5
+                  {avgRating.toFixed(1)} out of 5
                 </span>
               </div>
               <span className="text-lg text-gray-600">
-                {tournament._count.reviews} reviews
+                {tournament._count?.reviews || 0} reviews
               </span>
             </div>
           </div>
@@ -188,7 +189,7 @@ const TournamentDetailPage: React.FC = () => {
 
       {/* Reviews Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({tournament._count.reviews})</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({tournament._count?.reviews || 0})</h2>
         
         {reviewsLoading && <LoadingSpinner />}
         

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/database';
 import { AppError, catchAsync } from '../middleware/errorHandler';
-import { ApiResponse, CreateTournamentRequest } from '@travel-baseball/shared';
+import { ApiResponse, CreateTournamentRequest } from '../types';
 import { AuthenticatedRequest } from '../middleware/auth';
 
 export const getTournaments = catchAsync(async (req: Request, res: Response) => {

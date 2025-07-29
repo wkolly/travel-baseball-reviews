@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../utils/database';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 import { AppError, catchAsync } from '../middleware/errorHandler';
-import { LoginRequest, RegisterRequest, AuthResponse, ApiResponse } from '@travel-baseball/shared';
+import { LoginRequest, RegisterRequest, AuthResponse, ApiResponse } from '../types';
 
 // Validation schemas
 const registerSchema = z.object({

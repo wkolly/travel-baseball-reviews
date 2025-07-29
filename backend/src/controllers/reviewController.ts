@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../utils/database';
 import { AppError, catchAsync } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../middleware/auth';
-import { CreateReviewRequest, ApiResponse } from '@travel-baseball/shared';
+import { CreateReviewRequest, ApiResponse } from '../types';
 
 const createReviewSchema = z.object({
   coaching_rating: z.number().int().min(1).max(5),

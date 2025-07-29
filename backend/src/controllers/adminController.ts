@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { prisma } from '../utils/database';
 import { AppError, catchAsync } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../middleware/auth';
-import { ApiResponse } from '@travel-baseball/shared';
+import { ApiResponse } from '../types';
 
 export const getPendingTeams = catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { page = '1', limit = '20' } = req.query;

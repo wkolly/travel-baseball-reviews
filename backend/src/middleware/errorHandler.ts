@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiResponse } from '@travel-baseball/shared';
+import { ApiResponse } from '../types';
 
 export interface CustomError extends Error {
   statusCode?: number;

@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { User } from '@travel-baseball/shared';
+import { User } from '../types';
 
 const JWT_SECRET: string = process.env.JWT_SECRET || 'your-fallback-secret';
 const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || '7d';

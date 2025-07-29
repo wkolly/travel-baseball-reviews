@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../utils/database';
 import { AppError, catchAsync } from '../middleware/errorHandler';
-import { CreateTournamentReviewRequest, ApiResponse } from '@travel-baseball/shared';
+import { CreateTournamentReviewRequest, ApiResponse } from '../types';
 
 const createTournamentReviewSchema = z.object({
   overall_rating: z.number().min(1).max(5),

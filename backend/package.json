@@ -5,8 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
-    "build": "npm run build:shared && tsc && prisma generate",
-    "build:shared": "cd ../shared && npm run build",
+    "build": "tsc && prisma generate",
     "start": "node dist/server.js",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
@@ -19,7 +18,6 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@travel-baseball/shared": "file:../shared",
     "express": "^4.18.0",
     "cors": "^2.8.5",
     "helmet": "^7.0.0",

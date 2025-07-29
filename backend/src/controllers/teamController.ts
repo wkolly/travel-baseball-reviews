@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../utils/database';
 import { AppError, catchAsync } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../middleware/auth';
-import { CreateTeamRequest, TeamQuery, ApiResponse, US_STATES, AGE_GROUPS } from '@travel-baseball/shared';
+import { CreateTeamRequest, TeamQuery, ApiResponse, US_STATES, AGE_GROUPS } from '../types';
 
 const createTeamSchema = z.object({
   name: z.string().min(2, 'Team name must be at least 2 characters'),

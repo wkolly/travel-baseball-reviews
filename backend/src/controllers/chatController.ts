@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../utils/database';
 import { AppError, catchAsync } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../middleware/auth';
-import { CreateMessageRequest, ApiResponse, US_STATES } from '@travel-baseball/shared';
+import { CreateMessageRequest, ApiResponse, US_STATES } from '../types';
 
 const createMessageSchema = z.object({
   message: z.string().min(1, 'Message cannot be empty').max(1000, 'Message too long')

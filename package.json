@@ -1,0 +1,26 @@
+{
+  "name": "travel-baseball-platform",
+  "version": "1.0.0",
+  "description": "Travel baseball review platform - like Yelp for travel baseball teams",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:shared && npm run build:backend && npm run build:frontend",
+    "build:shared": "cd shared && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../shared && npm install"
+  },
+  "workspaces": [
+    "backend",
+    "frontend", 
+    "shared"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "keywords": ["travel", "baseball", "reviews", "platform", "youth-sports"],
+  "author": "Travel Baseball Platform",
+  "license": "MIT"
+}

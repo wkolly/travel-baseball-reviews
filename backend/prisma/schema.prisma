@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("USER") // USER, ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  teams               Team[]
+  tournaments         Tournament[]
+  teamSuggestions     Team[] @relation("TeamSuggestions")
+  teamApprovals       Team[] @relation("TeamApprovals")
+  reviews             Review[]
+  tournamentReviews   TournamentReview[]
+  chatMessages        ChatMessage[]
+
+  @@map("users")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  state       String
+  ageGroups   String   // JSON string for SQLite
+  description String?
+  contact     String?
+  status      String   @default("pending") // pending, approved, rejected
+  suggestedBy String?  // Who suggested this team
+  approvedBy  String?  // Admin who approved/rejected
+  approvedAt  DateTime?
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user      User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  suggester User?    @relation("TeamSuggestions", fields: [suggestedBy], references: [id], onDelete: SetNull)
+  approver  User?    @relation("TeamApprovals", fields: [approvedBy], references: [id], onDelete: SetNull)
+  reviews   Review[]
+
+  @@map("teams")
+}
+
+model Tournament {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  description String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user    User @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  reviews TournamentReview[]
+
+  @@map("tournaments")
+}
+
+model Review {
+  id                     String   @id @default(cuid())
+  teamId                 String
+  userId                 String?
+  coaching_rating        Int
+  value_rating           Int
+  organization_rating    Int
+  playing_time_rating    Int
+  overall_rating         Float
+  comment                String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  // Relations
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model TournamentReview {
+  id              String   @id @default(cuid())
+  tournamentId    String
+  userId          String?
+  overall_rating  Float
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user       User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tournament_reviews")
+}
+
+model ChatRoom {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  state     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  messages ChatMessage[]
+
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+// Enums removed for SQLite compatibility - using strings instead

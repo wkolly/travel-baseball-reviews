@@ -22,13 +22,13 @@ const ChatPage: React.FC = () => {
   } = useChat(selectedRoomId || '');
 
   const rooms = roomsData?.data || [];
-  const selectedRoom = rooms.find(room => room.id === selectedRoomId);
+  const selectedRoom = rooms.find((room: any) => room.id === selectedRoomId);
 
   // Auto-select first room when rooms load
   useEffect(() => {
     if (rooms.length > 0 && !selectedRoomId) {
       // Prefer global room first, or fallback to first room
-      const globalRoom = rooms.find(room => room.type === 'GLOBAL');
+      const globalRoom = rooms.find((room: any) => room.type === 'GLOBAL');
       setSelectedRoomId(globalRoom?.id || rooms[0].id);
     }
   }, [rooms, selectedRoomId]);

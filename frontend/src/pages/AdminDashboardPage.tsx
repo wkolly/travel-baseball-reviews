@@ -13,7 +13,6 @@ import {
   Edit,
   Trash2,
   UserCheck,
-  Settings,
   Star,
   MessageSquare
 } from 'lucide-react';

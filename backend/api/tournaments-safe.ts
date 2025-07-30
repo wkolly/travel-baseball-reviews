@@ -28,6 +28,12 @@ export default function handler(req: any, res: any) {
     userAgent: req.headers['user-agent']?.substring(0, 50)
   });
 
+  // Also log what we're returning
+  const logResponse = (data: any, description: string) => {
+    console.log(`${description}:`, JSON.stringify(data, null, 2));
+    return data;
+  };
+
   // Handle GET requests
   if (req.method === 'GET') {
     const { url } = req;

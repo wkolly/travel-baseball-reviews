@@ -44,6 +44,10 @@
       "dest": "api/reviews.ts"
     },
     {
+      "src": "/tournament-reviews(.*)",
+      "dest": "api/tournament-reviews.ts"
+    },
+    {
       "src": "/api/auth(.*)",
       "dest": "api/auth.ts"
     },
@@ -58,6 +62,10 @@
     {
       "src": "/api/reviews(.*)",
       "dest": "api/reviews.ts"
+    },
+    {
+      "src": "/api/tournament-reviews(.*)",
+      "dest": "api/tournament-reviews.ts"
     },
     {
       "src": "/(.*)",

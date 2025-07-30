@@ -20,15 +20,27 @@ export default function handler(req: any, res: any) {
     return res.status(200).end();
   }
 
+  const url = req.url || '';
+  
+  // Log unhandled requests to help debug
+  if (url !== '/' && url !== '' && !url.includes('favicon')) {
+    console.log('Unhandled request:', {
+      method: req.method,
+      url: url,
+      origin: req.headers.origin
+    });
+  }
+
   // Simple API response
   return res.status(200).json({
     message: 'Travel Baseball Reviews API',
     status: 'Working!',
     timestamp: new Date().toISOString(),
     method: req.method,
-    url: req.url,
+    url: url,
     frontend_url: process.env.FRONTEND_URL,
     database_configured: !!process.env.DATABASE_URL,
-    note: 'Backend deployed successfully - CORS configured'
+    note: 'Backend deployed successfully - CORS configured',
+    debug: url !== '/' && url !== '' ? 'This request was not handled by a specific endpoint' : undefined
   });
 }

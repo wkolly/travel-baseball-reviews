@@ -20,8 +20,55 @@ export default function handler(req: any, res: any) {
     return res.status(200).end();
   }
 
-  // For now, return mock data
+  // Handle GET requests
   if (req.method === 'GET') {
+    const { url } = req;
+    
+    // Check if this is a request for a specific tournament (e.g., /tournaments/1)
+    const tournamentIdMatch = url?.match(/\/tournaments\/([^\/]+)/);
+    if (tournamentIdMatch) {
+      const tournamentId = tournamentIdMatch[1];
+      
+      // Return single tournament data
+      return res.status(200).json({
+        success: true,
+        data: {
+          id: tournamentId,
+          name: tournamentId === '1' ? 'Summer Classic Tournament' : 'Fall Championship Series',
+          location: tournamentId === '1' ? 'Orlando, FL' : 'Phoenix, AZ',
+          description: tournamentId === '1' ? 'Premier summer tournament for youth baseball' : 'Competitive fall tournament series',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          _count: { reviews: 3 },
+          reviews: [
+            { 
+              id: '1', 
+              overall_rating: 4.5, 
+              comment: 'Great tournament organization',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            { 
+              id: '2', 
+              overall_rating: 5.0, 
+              comment: 'Excellent facilities and competition',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            { 
+              id: '3', 
+              overall_rating: 4.0, 
+              comment: 'Good experience overall',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ]
+        },
+        message: 'Tournament retrieved successfully'
+      });
+    }
+    
+    // Return list of tournaments
     return res.status(200).json({
       success: true,
       data: {
@@ -35,9 +82,27 @@ export default function handler(req: any, res: any) {
             updatedAt: new Date().toISOString(),
             _count: { reviews: 8 },
             reviews: [
-              { id: '1', overall_rating: 4.5, createdAt: new Date().toISOString() },
-              { id: '2', overall_rating: 5.0, createdAt: new Date().toISOString() },
-              { id: '3', overall_rating: 4.0, createdAt: new Date().toISOString() }
+              { 
+                id: '1', 
+                overall_rating: 4.5, 
+                comment: 'Great tournament organization',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              { 
+                id: '2', 
+                overall_rating: 5.0, 
+                comment: 'Excellent facilities and competition',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              { 
+                id: '3', 
+                overall_rating: 4.0, 
+                comment: 'Good experience overall',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }
             ]
           },
           {
@@ -47,11 +112,29 @@ export default function handler(req: any, res: any) {
             description: 'Competitive fall tournament series',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            _count: { reviews: 12 },
+            _count: { reviews: 3 },
             reviews: [
-              { id: '4', overall_rating: 4.8, createdAt: new Date().toISOString() },
-              { id: '5', overall_rating: 4.2, createdAt: new Date().toISOString() },
-              { id: '6', overall_rating: 4.6, createdAt: new Date().toISOString() }
+              { 
+                id: '4', 
+                overall_rating: 4.8, 
+                comment: 'Well run tournament',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              { 
+                id: '5', 
+                overall_rating: 4.2, 
+                comment: 'Nice fields and good competition',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              { 
+                id: '6', 
+                overall_rating: 4.6, 
+                comment: 'Solid tournament experience',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }
             ]
           }
         ],

@@ -33,22 +33,10 @@ export default function handler(req: any, res: any) {
     return res.status(200).json({
       success: true,
       data: {
-        tournaments: [
-          {
-            id: '1',
-            name: 'Summer Classic Tournament',
-            location: 'Orlando, FL',
-            description: 'Premier summer tournament for youth baseball'
-          }
-        ],
-        pagination: {
-          page: 1,
-          limit: 20,
-          total: 1,
-          totalPages: 1
-        }
+        tournaments: []
       },
-      message: 'Tournaments retrieved successfully'
+      message: 'Frontend rebuild required - returning empty data to prevent errors',
+      debug: 'The toFixed error indicates your frontend JavaScript needs to be rebuilt'
     });
   }
 

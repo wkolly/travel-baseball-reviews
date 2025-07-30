@@ -197,15 +197,28 @@ export default function handler(req: any, res: any) {
 
   // Handle POST for creating teams
   if (req.method === 'POST') {
-    return res.status(200).json({
-      success: true,
-      data: {
-        id: 'new-team-id',
-        name: req.body?.name || 'New Team',
-        status: 'pending'
-      },
-      message: 'Team suggestion submitted successfully'
-    });
+    // Import the shared data function
+    const { addTeam } = require('./shared-data');
+    
+    console.log('Team suggestion received:', req.body);
+    
+    try {
+      const newTeam = addTeam(req.body);
+      
+      console.log('New team added to pending list:', newTeam);
+      
+      return res.status(201).json({
+        success: true,
+        data: newTeam,
+        message: 'Team suggestion submitted successfully and is pending approval'
+      });
+    } catch (error) {
+      console.error('Error adding team:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to submit team suggestion'
+      });
+    }
   }
 
   return res.status(405).json({

@@ -38,15 +38,18 @@ export default function handler(req: any, res: any) {
       });
     }
 
+    // Check if admin user
+    const isAdmin = email === 'admin@travelballhub.com';
+    
     // Accept any login
     return res.status(200).json({
       success: true,
       data: {
         user: {
-          id: 'user-123',
+          id: isAdmin ? 'admin-user' : 'user-123',
           email: email,
-          name: email.split('@')[0],
-          role: 'USER',
+          name: isAdmin ? 'Admin' : email.split('@')[0],
+          role: isAdmin ? 'ADMIN' : 'USER',
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         },

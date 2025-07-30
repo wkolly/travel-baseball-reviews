@@ -246,9 +246,18 @@ export default function handler(req: any, res: any) {
               id: '1',
               type: 'team',
               teamId: '1',
-              team: { name: 'Atlanta Thunder' },
+              team: { 
+                id: '1',
+                name: 'Atlanta Thunder',
+                location: 'Atlanta',
+                state: 'GA'
+              },
               userId: 'user-1',
-              user: { name: 'Parent One', email: 'parent1@example.com' },
+              user: { 
+                id: 'user-1',
+                name: 'Parent One', 
+                email: 'parent1@example.com' 
+              },
               overall_rating: 4.2,
               coaching_rating: 4,
               value_rating: 4,
@@ -262,9 +271,18 @@ export default function handler(req: any, res: any) {
               id: '2',
               type: 'team',
               teamId: '1',
-              team: { name: 'Atlanta Thunder' },
+              team: { 
+                id: '1',
+                name: 'Atlanta Thunder',
+                location: 'Atlanta',
+                state: 'GA'
+              },
               userId: 'user-2',
-              user: { name: 'Coach Smith', email: 'coach@example.com' },
+              user: { 
+                id: 'user-2',
+                name: 'Coach Smith', 
+                email: 'coach@example.com' 
+              },
               overall_rating: 4.8,
               coaching_rating: 5,
               value_rating: 4,
@@ -278,9 +296,17 @@ export default function handler(req: any, res: any) {
               id: '3',
               type: 'tournament',
               tournamentId: '1',
-              tournament: { name: 'Summer Championship Series' },
+              tournament: { 
+                id: '1',
+                name: 'Summer Championship Series',
+                location: 'Orlando, FL'
+              },
               userId: 'user-3',
-              user: { name: 'Parent Two', email: 'parent2@example.com' },
+              user: { 
+                id: 'user-3',
+                name: 'Parent Two', 
+                email: 'parent2@example.com' 
+              },
               overall_rating: 4.5,
               facilities_rating: 4,
               organization_rating: 5,
@@ -322,7 +348,7 @@ export default function handler(req: any, res: any) {
   }
 
   // Handle team approval/rejection
-  if (url?.match(/\/teams\/\d+\/approve/)) {
+  if (url?.match(/\/admin\/teams\/\d+\/approve/) || url?.match(/\/teams\/\d+\/approve/)) {
     if (req.method === 'PUT') {
       return res.status(200).json({
         success: true,
@@ -331,7 +357,7 @@ export default function handler(req: any, res: any) {
     }
   }
 
-  if (url?.match(/\/teams\/\d+\/reject/)) {
+  if (url?.match(/\/admin\/teams\/\d+\/reject/) || url?.match(/\/teams\/\d+\/reject/)) {
     if (req.method === 'PUT') {
       return res.status(200).json({
         success: true,
@@ -340,8 +366,38 @@ export default function handler(req: any, res: any) {
     }
   }
 
+  // Handle review deletion endpoints
+  if (url?.includes('/admin/reviews/teams/')) {
+    if (req.method === 'DELETE') {
+      const reviewIdMatch = url?.match(/\/admin\/reviews\/teams\/([^\/\?]+)/);
+      const reviewId = reviewIdMatch?.[1];
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Team review deleted successfully'
+      });
+    }
+  }
+
+  if (url?.includes('/admin/reviews/tournaments/')) {
+    if (req.method === 'DELETE') {
+      const reviewIdMatch = url?.match(/\/admin\/reviews\/tournaments\/([^\/\?]+)/);
+      const reviewId = reviewIdMatch?.[1];
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Tournament review deleted successfully'
+      });
+    }
+  }
+
+  // Log 404s for debugging
+  console.log('Admin 404 - URL not matched:', url, 'Method:', req.method);
+  
   return res.status(404).json({
     success: false,
-    message: 'Admin endpoint not found'
+    message: 'Admin endpoint not found',
+    url: url,
+    method: req.method
   });
 }

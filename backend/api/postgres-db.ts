@@ -21,7 +21,29 @@ function getPool() {
 // Initialize database tables - Skip since table already exists  
 export async function initializeDatabase() {
   console.log('✅ Using existing database schema');
-  // The table already exists with the correct schema, no initialization needed
+  
+  // Ensure system user exists for foreign key constraints
+  const pool = getPool();
+  try {
+    await pool.query(`
+      INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      ON CONFLICT (id) DO NOTHING
+    `, [
+      'system-user',
+      'system@travelbaseballreview.com',
+      'system-password-hash',
+      'System User',
+      'SYSTEM',
+      new Date(),
+      new Date()
+    ]);
+    console.log('✅ System user ensured');
+  } catch (error) {
+    console.error('Warning: Could not ensure system user exists:', error.message);
+    // Don't throw - the user might already exist
+  }
+  
   return;
 }
 
@@ -99,7 +121,7 @@ export async function createTeam(teamData: any) {
     status: 'pending',
     createdAt: new Date(),
     updatedAt: new Date(),
-    createdBy: 'user-' + Date.now()
+    createdBy: 'system-user'  // Use system user to satisfy foreign key constraint
   };
 
   try {

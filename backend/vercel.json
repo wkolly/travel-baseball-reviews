@@ -76,6 +76,10 @@
       "dest": "api/reviews.ts"
     },
     {
+      "src": "/api/test-db(.*)",
+      "dest": "api/test-db.ts"
+    },
+    {
       "src": "/(.*)",
       "dest": "api/index.ts"
     }

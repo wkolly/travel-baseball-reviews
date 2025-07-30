@@ -21,29 +21,39 @@ export default function handler(req: any, res: any) {
   }
 
   const { url } = req;
+  console.log('Auth request received:', { method: req.method, url });
 
-  // Handle login - POST /api/auth/login
-  if (req.method === 'POST' && (url?.includes('/login') || url?.endsWith('/auth'))) {
-    const { email, password } = req.body || {};
-    
-    // Basic validation
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email and password are required'
+  // Handle login requests
+  if (url?.includes('/login') || url?.includes('/api/login')) {
+    if (req.method === 'POST') {
+      const { email, password } = req.body || {};
+      
+      console.log('Login attempt:', { 
+        email, 
+        password: password ? '***' : 'missing',
+        body: req.body,
+        headers: req.headers['content-type']
       });
-    }
+      
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email and password are required'
+        });
+      }
 
-    // Mock authentication - in real app, verify against database
-    if (email && password) {
+      // Check if admin user
+      const isAdmin = email === 'admin@travelballhub.com';
+      
+      // Accept any login
       return res.status(200).json({
         success: true,
         data: {
           user: {
-            id: 'user-123',
+            id: isAdmin ? 'admin-user' : 'user-123',
             email: email,
-            name: email.split('@')[0],
-            role: email.includes('admin') ? 'ADMIN' : 'USER',
+            name: isAdmin ? 'Admin' : email.split('@')[0],
+            role: isAdmin ? 'ADMIN' : 'USER',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           },
@@ -52,76 +62,72 @@ export default function handler(req: any, res: any) {
         message: 'Login successful'
       });
     }
-  }
 
-  // Handle registration - POST /api/auth/register
-  if (req.method === 'POST' && url?.includes('/register')) {
-    const { email, password, name } = req.body || {};
-    
-    // Basic validation
-    if (!email || !password || !name) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email, password, and name are required'
+    if (req.method === 'GET') {
+      return res.status(200).json({
+        message: 'Login endpoint is working',
+        method: req.method,
+        timestamp: new Date().toISOString()
       });
     }
+  }
 
-    // Mock registration - in real app, save to database
-    return res.status(201).json({
-      success: true,
-      data: {
-        user: {
-          id: 'user-' + Date.now(),
-          email: email,
-          name: name,
-          role: 'USER',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+  // Handle registration requests
+  if (url?.includes('/register') || url?.includes('/signup')) {
+    if (req.method === 'POST') {
+      console.log('Registration request received:', {
+        method: req.method,
+        url: req.url,
+        body: req.body,
+        headers: req.headers['content-type']
+      });
+      
+      const { email, password, name } = req.body || {};
+      
+      console.log('Registration attempt:', { 
+        email, 
+        name, 
+        password: password ? '***' : 'missing',
+        body: req.body,
+        headers: req.headers['content-type']
+      });
+      
+      if (!email || !password || !name) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email, password, and name are required'
+        });
+      }
+
+      // Accept any registration
+      return res.status(201).json({
+        success: true,
+        data: {
+          user: {
+            id: 'user-' + Date.now(),
+            email: email,
+            name: name,
+            role: 'USER',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          token: 'mock-jwt-token-' + Date.now()
         },
-        token: 'mock-jwt-token-' + Date.now()
-      },
-      message: 'Registration successful'
-    });
-  }
-
-  // Handle logout - POST /api/auth/logout
-  if (req.method === 'POST' && url?.includes('/logout')) {
-    return res.status(200).json({
-      success: true,
-      message: 'Logout successful'
-    });
-  }
-
-  // Handle user profile - GET /api/auth/me
-  if (req.method === 'GET' && (url?.includes('/me') || url?.endsWith('/auth'))) {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        message: 'No token provided'
+        message: 'Registration successful'
       });
     }
 
-    // Mock user profile
-    return res.status(200).json({
-      success: true,
-      data: {
-        user: {
-          id: 'user-123',
-          email: 'user@example.com',
-          name: 'Mock User',
-          role: 'USER',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      },
-      message: 'User profile retrieved'
-    });
+    if (req.method === 'GET') {
+      return res.status(200).json({
+        message: 'Register endpoint is working',
+        method: req.method,
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 
-  return res.status(404).json({
+  return res.status(405).json({
     success: false,
-    message: 'Auth endpoint not found'
+    message: 'Method not allowed'
   });
 }

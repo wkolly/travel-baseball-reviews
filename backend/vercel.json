@@ -9,27 +9,27 @@
   "routes": [
     {
       "src": "/api/login(.*)",
-      "dest": "api/login.ts"
+      "dest": "api/auth.ts"
     },
     {
       "src": "/api/register(.*)", 
-      "dest": "api/register.ts"
+      "dest": "api/auth.ts"
     },
     {
       "src": "/login(.*)",
-      "dest": "api/login.ts"
+      "dest": "api/auth.ts"
     },
     {
       "src": "/register(.*)", 
-      "dest": "api/register.ts"
+      "dest": "api/auth.ts"
     },
     {
       "src": "/signup(.*)", 
-      "dest": "api/signup.ts"
+      "dest": "api/auth.ts"
     },
     {
       "src": "/api/signup(.*)", 
-      "dest": "api/signup.ts"
+      "dest": "api/auth.ts"
     },
     {
       "src": "/api/admin(.*)",
@@ -49,15 +49,11 @@
     },
     {
       "src": "/tournament-reviews(.*)",
-      "dest": "api/tournament-reviews.ts"
+      "dest": "api/reviews.ts"
     },
     {
       "src": "/team-reviews(.*)",
-      "dest": "api/team-reviews.ts"
-    },
-    {
-      "src": "/api/auth(.*)",
-      "dest": "api/auth.ts"
+      "dest": "api/reviews.ts"
     },
     {
       "src": "/api/teams(.*)",
@@ -73,11 +69,11 @@
     },
     {
       "src": "/api/tournament-reviews(.*)",
-      "dest": "api/tournament-reviews.ts"
+      "dest": "api/reviews.ts"
     },
     {
       "src": "/api/team-reviews(.*)",
-      "dest": "api/team-reviews.ts"
+      "dest": "api/reviews.ts"
     },
     {
       "src": "/(.*)",

@@ -33,7 +33,7 @@
     },
     {
       "src": "/api/admin(.*)",
-      "dest": "api/admin-new.ts"
+      "dest": "api/admin.ts"
     },
     {
       "src": "/teams(.*)",

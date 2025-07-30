@@ -118,9 +118,46 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  // Debug endpoint to check team creation
+  if (req.method === 'GET' && url?.includes('/debug-teams')) {
+    try {
+      const { getAllTeams, getPendingTeams, initializeDatabase } = await import('./postgres-db');
+      await initializeDatabase();
+      
+      const allTeams = await getAllTeams();
+      const pendingTeams = await getPendingTeams();
+      
+      return res.status(200).json({
+        success: true,
+        data: {
+          allTeams: allTeams,
+          pendingTeams: pendingTeams,
+          allCount: allTeams.length,
+          pendingCount: pendingTeams.length,
+          databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not Set',
+          timestamp: new Date().toISOString()
+        },
+        message: 'Debug teams data'
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        data: {
+          error: error instanceof Error ? error.message : String(error),
+          databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not Set'
+        },
+        message: 'Debug teams failed'
+      });
+    }
+  }
+
   // Handle POST for creating teams
   if (req.method === 'POST') {
     console.log('Team suggestion received:', req.body);
+    console.log('Environment check:', {
+      databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not Set',
+      nodeEnv: process.env.NODE_ENV
+    });
     
     try {
       // Import database functions and create team directly

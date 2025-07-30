@@ -36,6 +36,36 @@ export default async function handler(req: any, res: any) {
   const { url } = req;
   console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
 
+  // Debug endpoint to check pending teams specifically
+  if (url?.includes('/admin/debug-pending')) {
+    try {
+      console.log('Debug pending teams request');
+      const pendingTeams = await getPendingTeams();
+      console.log('Pending teams from database:', pendingTeams);
+      
+      return res.status(200).json({
+        success: true,
+        data: {
+          pendingTeams: pendingTeams,
+          count: pendingTeams.length,
+          databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not Set',
+          timestamp: new Date().toISOString()
+        },
+        message: 'Debug pending teams'
+      });
+    } catch (error) {
+      console.error('Debug pending teams error:', error);
+      return res.status(500).json({
+        success: false,
+        data: {
+          error: error instanceof Error ? error.message : String(error),
+          databaseUrl: process.env.DATABASE_URL ? 'Set' : 'Not Set'
+        },
+        message: 'Debug pending teams failed'
+      });
+    }
+  }
+
   // Debug endpoint to check database schema
   if (url?.includes('/admin/debug-db')) {
     try {

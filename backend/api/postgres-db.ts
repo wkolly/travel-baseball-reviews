@@ -1,9 +1,11 @@
 import { Pool, Client } from 'pg';
 
-// Database connection configuration
+// Database connection configuration for Neon
 const dbConfig = {
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('neon.tech') ? { rejectUnauthorized: false } : false,
+  ssl: {
+    rejectUnauthorized: false
+  }
 };
 
 let pool: Pool | null = null;

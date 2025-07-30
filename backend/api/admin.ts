@@ -36,19 +36,48 @@ export default async function handler(req: any, res: any) {
   const { url } = req;
   console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
 
-  // Debug endpoint to check database configuration
+  // Debug endpoint to test database connection
   if (url?.includes('/admin/debug-db')) {
-    return res.status(200).json({
-      success: true,
-      data: {
-        hasDatabaseUrl: !!process.env.DATABASE_URL,
-        databaseUrlLength: process.env.DATABASE_URL?.length || 0,
-        databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'not set',
-        nodeEnv: process.env.NODE_ENV,
-        timestamp: new Date().toISOString()
-      },
-      message: 'Database debug info'
-    });
+    try {
+      const { Client } = await import('pg');
+      const client = new Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }
+      });
+      
+      await client.connect();
+      const result = await client.query('SELECT NOW()');
+      await client.end();
+      
+      return res.status(200).json({
+        success: true,
+        data: {
+          hasDatabaseUrl: !!process.env.DATABASE_URL,
+          databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+          databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'not set',
+          connectionTest: 'SUCCESS',
+          currentTime: result.rows[0].now,
+          nodeEnv: process.env.NODE_ENV,
+          timestamp: new Date().toISOString()
+        },
+        message: 'Database connection successful'
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        data: {
+          hasDatabaseUrl: !!process.env.DATABASE_URL,
+          databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+          databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'not set',
+          connectionTest: 'FAILED',
+          error: error instanceof Error ? error.message : String(error),
+          errorCode: (error as any)?.code,
+          nodeEnv: process.env.NODE_ENV,
+          timestamp: new Date().toISOString()
+        },
+        message: 'Database connection failed'
+      });
+    }
   }
 
   // Initialize database on first request

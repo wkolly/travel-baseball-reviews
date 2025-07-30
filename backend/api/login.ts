@@ -24,7 +24,12 @@ export default function handler(req: any, res: any) {
   if (req.method === 'POST') {
     const { email, password } = req.body || {};
     
-    console.log('Login attempt:', { email, password: password ? '***' : 'missing' });
+    console.log('Login attempt:', { 
+      email, 
+      password: password ? '***' : 'missing',
+      body: req.body,
+      headers: req.headers['content-type']
+    });
     
     if (!email || !password) {
       return res.status(400).json({

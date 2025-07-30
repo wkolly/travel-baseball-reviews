@@ -31,7 +31,13 @@ export default function handler(req: any, res: any) {
     
     const { email, password, name } = req.body || {};
     
-    console.log('Registration attempt:', { email, name, password: password ? '***' : 'missing' });
+    console.log('Registration attempt:', { 
+      email, 
+      name, 
+      password: password ? '***' : 'missing',
+      body: req.body,
+      headers: req.headers['content-type']
+    });
     
     if (!email || !password || !name) {
       return res.status(400).json({

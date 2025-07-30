@@ -38,13 +38,7 @@ export default function handler(req: any, res: any) {
             id: '1',
             name: 'Summer Classic Tournament',
             location: 'Orlando, FL',
-            description: 'Premier summer tournament for youth baseball',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            _count: { 
-              reviews: 0 
-            },
-            reviews: []
+            description: 'Premier summer tournament for youth baseball'
           }
         ],
         pagination: {

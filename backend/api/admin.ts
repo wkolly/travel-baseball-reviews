@@ -21,7 +21,7 @@ export default function handler(req: any, res: any) {
   }
 
   const { url } = req;
-  console.log('Admin request received:', { method: req.method, url });
+  console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
 
   // Route handling based on URL path
   if (url?.includes('/admin/stats')) {

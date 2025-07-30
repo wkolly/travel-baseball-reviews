@@ -42,23 +42,9 @@ export default function handler(req: any, res: any) {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             _count: { 
-              reviews: 1 
+              reviews: 0 
             },
-            reviews: [
-              {
-                id: '1',
-                tournamentId: '1',
-                userId: null,
-                overall_rating: 4.5,
-                coaching_rating: 4.5,
-                value_rating: 4.5,
-                organization_rating: 4.5,
-                playing_time_rating: 4.5,
-                comment: 'Great tournament',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              }
-            ]
+            reviews: []
           }
         ],
         pagination: {

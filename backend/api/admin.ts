@@ -265,14 +265,33 @@ export default async function handler(req: any, res: any) {
         // Ensure we always return an array
         const safeTeams = Array.isArray(teams) ? teams : [];
         
+        // Ensure each team has the exact structure the frontend expects
+        const formattedTeams = safeTeams.map(team => ({
+          id: team.id || 'unknown',
+          name: team.name || 'Unknown Team',
+          location: team.location || '',
+          state: team.state || '',
+          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : [],
+          description: team.description || '',
+          status: team.status || 'pending',
+          createdAt: team.createdAt || new Date().toISOString(),
+          updatedAt: team.updatedAt || new Date().toISOString(),
+          user: {
+            id: team.user?.id || 'unknown',
+            name: team.user?.name || 'Unknown User',
+            email: team.user?.email || 'unknown@example.com'
+          },
+          _count: { reviews: team._count?.reviews || 0 }
+        }));
+
         return res.status(200).json({
           success: true,
           data: {
-            teams: safeTeams,
+            teams: formattedTeams,
             pagination: {
               page: 1,
               limit: 20,
-              total: safeTeams.length,
+              total: formattedTeams.length,
               totalPages: 1
             }
           },
@@ -603,14 +622,33 @@ export default async function handler(req: any, res: any) {
         // Ensure we always return an array
         const safeTeams = Array.isArray(pendingTeams) ? pendingTeams : [];
         
+        // Ensure each team has the exact structure the frontend expects
+        const formattedTeams = safeTeams.map(team => ({
+          id: team.id || 'unknown',
+          name: team.name || 'Unknown Team',
+          location: team.location || '',
+          state: team.state || '',
+          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : [],
+          description: team.description || '',
+          status: team.status || 'pending',
+          createdAt: team.createdAt || new Date().toISOString(),
+          updatedAt: team.updatedAt || new Date().toISOString(),
+          user: {
+            id: team.user?.id || 'unknown',
+            name: team.user?.name || 'Unknown User',
+            email: team.user?.email || 'unknown@example.com'
+          },
+          _count: { reviews: team._count?.reviews || 0 }
+        }));
+
         return res.status(200).json({
           success: true,
           data: {
-            teams: safeTeams,
+            teams: formattedTeams,
             pagination: {
               page: 1,
               limit: 20,
-              total: safeTeams.length,
+              total: formattedTeams.length,
               totalPages: 1
             }
           },

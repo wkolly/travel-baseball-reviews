@@ -1,3 +1,9 @@
+// Helper function to ensure rating is a valid number
+function safeRating(rating: any): number {
+  const num = Number(rating);
+  return isNaN(num) ? 0 : Math.max(0, Math.min(5, num));
+}
+
 export default function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
@@ -43,21 +49,39 @@ export default function handler(req: any, res: any) {
           reviews: [
             { 
               id: '1', 
+              tournamentId: tournamentId,
+              userId: null,
               overall_rating: 4.5, 
+              coaching_rating: 4.5,
+              value_rating: 4.5,
+              organization_rating: 4.5,
+              playing_time_rating: 4.5,
               comment: 'Great tournament organization',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             },
             { 
               id: '2', 
+              tournamentId: tournamentId,
+              userId: null,
               overall_rating: 5.0, 
+              coaching_rating: 5.0,
+              value_rating: 5.0,
+              organization_rating: 5.0,
+              playing_time_rating: 5.0,
               comment: 'Excellent facilities and competition',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             },
             { 
               id: '3', 
+              tournamentId: tournamentId,
+              userId: null,
               overall_rating: 4.0, 
+              coaching_rating: 4.0,
+              value_rating: 4.0,
+              organization_rating: 4.0,
+              playing_time_rating: 4.0,
               comment: 'Good experience overall',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
@@ -84,21 +108,39 @@ export default function handler(req: any, res: any) {
             reviews: [
               { 
                 id: '1', 
-                overall_rating: 4.5, 
+                tournamentId: '1',
+                userId: null,
+                overall_rating: safeRating(4.5), 
+                coaching_rating: safeRating(4.5),
+                value_rating: safeRating(4.5),
+                organization_rating: safeRating(4.5),
+                playing_time_rating: safeRating(4.5),
                 comment: 'Great tournament organization',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
               },
               { 
                 id: '2', 
+                tournamentId: '1',
+                userId: null,
                 overall_rating: 5.0, 
+                coaching_rating: 5.0,
+                value_rating: 5.0,
+                organization_rating: 5.0,
+                playing_time_rating: 5.0,
                 comment: 'Excellent facilities and competition',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
               },
               { 
                 id: '3', 
+                tournamentId: '1',
+                userId: null,
                 overall_rating: 4.0, 
+                coaching_rating: 4.0,
+                value_rating: 4.0,
+                organization_rating: 4.0,
+                playing_time_rating: 4.0,
                 comment: 'Good experience overall',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -116,21 +158,39 @@ export default function handler(req: any, res: any) {
             reviews: [
               { 
                 id: '4', 
+                tournamentId: '2',
+                userId: null,
                 overall_rating: 4.8, 
+                coaching_rating: 4.8,
+                value_rating: 4.8,
+                organization_rating: 4.8,
+                playing_time_rating: 4.8,
                 comment: 'Well run tournament',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
               },
               { 
                 id: '5', 
+                tournamentId: '2',
+                userId: null,
                 overall_rating: 4.2, 
+                coaching_rating: 4.2,
+                value_rating: 4.2,
+                organization_rating: 4.2,
+                playing_time_rating: 4.2,
                 comment: 'Nice fields and good competition',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
               },
               { 
                 id: '6', 
+                tournamentId: '2',
+                userId: null,
                 overall_rating: 4.6, 
+                coaching_rating: 4.6,
+                value_rating: 4.6,
+                organization_rating: 4.6,
+                playing_time_rating: 4.6,
                 comment: 'Solid tournament experience',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()

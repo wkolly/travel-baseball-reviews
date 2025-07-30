@@ -20,8 +20,85 @@ export default function handler(req: any, res: any) {
     return res.status(200).end();
   }
 
-  // For now, return mock data
+  // Log the request for debugging
+  console.log('Teams request received:', {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin
+  });
+
+  // Handle GET requests
   if (req.method === 'GET') {
+    const { url } = req;
+    
+    // Check if this is a request for a specific team (e.g., /teams/1)
+    const teamIdMatch = url?.match(/\/teams\/([^\/\?]+)/);
+    if (teamIdMatch) {
+      const teamId = teamIdMatch[1];
+      
+      console.log('Individual team request for ID:', teamId);
+      
+      // Return single team data
+      return res.status(200).json({
+        success: true,
+        data: {
+          id: teamId,
+          name: teamId === '1' ? 'Atlanta Thunder' : 'Dallas Diamonds',
+          location: teamId === '1' ? 'Atlanta' : 'Dallas',
+          state: teamId === '1' ? 'GA' : 'TX',
+          ageGroups: teamId === '1' ? '["12U", "14U"]' : '["10U", "12U"]',
+          description: teamId === '1' ? 'Competitive travel baseball team' : 'Premier youth baseball organization',
+          status: 'approved',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          _count: { reviews: 3 },
+          reviews: [
+            { 
+              id: '1', 
+              teamId: teamId,
+              userId: null,
+              overall_rating: 4.2, 
+              coaching_rating: 4, 
+              value_rating: 4, 
+              organization_rating: 5, 
+              playing_time_rating: 4, 
+              comment: 'Great coaching staff and well organized team.',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            { 
+              id: '2', 
+              teamId: teamId,
+              userId: null,
+              overall_rating: 4.8, 
+              coaching_rating: 5, 
+              value_rating: 4, 
+              organization_rating: 5, 
+              playing_time_rating: 5,
+              comment: 'Excellent team with great player development.',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            { 
+              id: '3', 
+              teamId: teamId,
+              userId: null,
+              overall_rating: 4.0, 
+              coaching_rating: 4, 
+              value_rating: 4, 
+              organization_rating: 4, 
+              playing_time_rating: 4,
+              comment: 'Solid team with good opportunities for kids.',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ]
+        },
+        message: 'Team details retrieved successfully'
+      });
+    }
+    
+    // Return list of teams
     return res.status(200).json({
       success: true,
       data: {

@@ -140,6 +140,10 @@ export default async function handler(req: any, res: any) {
       });
     } catch (error) {
       console.error('Error creating team:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
       
       // Fallback - create a simple response
       const newTeam = {
@@ -151,7 +155,8 @@ export default async function handler(req: any, res: any) {
       return res.status(201).json({
         success: true,
         data: newTeam,
-        message: 'Team suggestion submitted (fallback mode)!'
+        message: 'Team suggestion submitted (fallback mode)!',
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   }

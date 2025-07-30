@@ -1,3 +1,101 @@
+// In-memory data store for demo purposes
+let teamsData = [
+  {
+    id: '1',
+    name: 'Atlanta Thunder',
+    location: 'Atlanta',
+    state: 'GA',
+    ageGroups: '["12U", "14U"]',
+    description: 'Competitive travel baseball team',
+    status: 'approved',
+    createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    user: {
+      id: 'user-1',
+      name: 'Coach Thompson',
+      email: 'coach@atlantathunder.com'
+    },
+    _count: { reviews: 3 }
+  },
+  {
+    id: '2',
+    name: 'Dallas Diamonds',
+    location: 'Dallas',
+    state: 'TX',
+    ageGroups: '["10U", "12U"]',
+    description: 'Premier youth baseball organization',
+    status: 'approved',
+    createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    user: {
+      id: 'user-2', 
+      name: 'Manager Davis',
+      email: 'manager@dallasdiamonds.com'
+    },
+    _count: { reviews: 2 }
+  },
+  {
+    id: '3',
+    name: 'Houston Heat',
+    location: 'Houston',
+    state: 'TX',
+    ageGroups: '["14U", "16U"]',
+    description: 'Competitive baseball team focused on player development',
+    status: 'pending',
+    createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+    user: {
+      id: 'user-3',
+      name: 'Director Martinez',
+      email: 'director@houstonheat.com'
+    },
+    _count: { reviews: 0 }
+  }
+];
+
+let tournamentsData = [
+  {
+    id: '1',
+    name: 'Summer Championship Series',
+    location: 'Orlando, FL',
+    startDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+    endDate: new Date(Date.now() + 32 * 86400000).toISOString(),
+    ageGroups: '["12U", "14U", "16U"]',
+    description: 'Premier summer tournament featuring top teams from across the Southeast',
+    entryFee: 850,
+    maxTeams: 32,
+    status: 'active',
+    createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    user: {
+      id: 'user-1',
+      name: 'Tournament Director',
+      email: 'director@summerseries.com'
+    },
+    _count: { reviews: 1 }
+  },
+  {
+    id: '2',
+    name: 'Fall Classic Tournament',
+    location: 'Phoenix, AZ',
+    startDate: new Date(Date.now() + 60 * 86400000).toISOString(),
+    endDate: new Date(Date.now() + 62 * 86400000).toISOString(),
+    ageGroups: '["10U", "12U", "14U"]',
+    description: 'Annual fall tournament with excellent facilities',
+    entryFee: 750,
+    maxTeams: 24,
+    status: 'active',
+    createdAt: new Date(Date.now() - 45 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    user: {
+      id: 'user-2',
+      name: 'Classic Organizer',
+      email: 'organizer@fallclassic.com'
+    },
+    _count: { reviews: 2 }
+  }
+];
+
 export default function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
@@ -26,16 +124,19 @@ export default function handler(req: any, res: any) {
   // Route handling based on URL path
   if (url?.includes('/admin/stats')) {
     if (req.method === 'GET') {
+      const approvedTeams = teamsData.filter(t => t.status === 'approved').length;
+      const pendingTeams = teamsData.filter(t => t.status === 'pending').length;
+      
       return res.status(200).json({
         success: true,
         data: {
           teams: {
-            total: 3,
-            approved: 2,
-            pending: 1
+            total: teamsData.length,
+            approved: approvedTeams,
+            pending: pendingTeams
           },
           tournaments: {
-            total: 2
+            total: tournamentsData.length
           },
           users: {
             total: 5
@@ -130,63 +231,11 @@ export default function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         data: {
-          teams: [
-            {
-              id: '1',
-              name: 'Atlanta Thunder',
-              location: 'Atlanta',
-              state: 'GA',
-              ageGroups: '["12U", "14U"]',
-              description: 'Competitive travel baseball team',
-              status: 'approved',
-              createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-              user: {
-                id: 'user-1',
-                name: 'Coach Thompson',
-                email: 'coach@atlantathunder.com'
-              },
-              _count: { reviews: 3 }
-            },
-            {
-              id: '2',
-              name: 'Dallas Diamonds',
-              location: 'Dallas',
-              state: 'TX',
-              ageGroups: '["10U", "12U"]',
-              description: 'Premier youth baseball organization',
-              status: 'approved',
-              createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-              user: {
-                id: 'user-2', 
-                name: 'Manager Davis',
-                email: 'manager@dallasdiamonds.com'
-              },
-              _count: { reviews: 2 }
-            },
-            {
-              id: '3',
-              name: 'Houston Heat',
-              location: 'Houston',
-              state: 'TX',
-              ageGroups: '["14U", "16U"]',
-              description: 'Competitive baseball team focused on player development',
-              status: 'pending',
-              createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-              user: {
-                id: 'user-3',
-                name: 'Director Martinez',
-                email: 'director@houstonheat.com'
-              },
-              _count: { reviews: 0 }
-            }
-          ],
+          teams: teamsData,
           pagination: {
             page: 1,
             limit: 20,
-            total: 3,
+            total: teamsData.length,
             totalPages: 1
           }
         },
@@ -198,14 +247,25 @@ export default function handler(req: any, res: any) {
       const teamIdMatch = url?.match(/\/admin\/teams\/([^\/\?]+)/);
       const teamId = teamIdMatch?.[1];
       
-      return res.status(200).json({
-        success: true,
-        data: {
-          id: teamId,
+      // Find and update the team
+      const teamIndex = teamsData.findIndex(t => t.id === teamId);
+      if (teamIndex !== -1) {
+        teamsData[teamIndex] = {
+          ...teamsData[teamIndex],
           ...req.body,
           updatedAt: new Date().toISOString()
-        },
-        message: 'Team updated successfully'
+        };
+        
+        return res.status(200).json({
+          success: true,
+          data: teamsData[teamIndex],
+          message: 'Team updated successfully'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
       });
     }
 
@@ -213,9 +273,21 @@ export default function handler(req: any, res: any) {
       const teamIdMatch = url?.match(/\/admin\/teams\/([^\/\?]+)/);
       const teamId = teamIdMatch?.[1];
       
-      return res.status(200).json({
-        success: true,
-        message: 'Team deleted successfully'
+      // Find and remove the team
+      const teamIndex = teamsData.findIndex(t => t.id === teamId);
+      if (teamIndex !== -1) {
+        const deletedTeam = teamsData.splice(teamIndex, 1)[0];
+        
+        return res.status(200).json({
+          success: true,
+          data: deletedTeam,
+          message: 'Team deleted successfully'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
       });
     }
   }
@@ -226,52 +298,11 @@ export default function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         data: {
-          tournaments: [
-            {
-              id: '1',
-              name: 'Summer Championship Series',
-              location: 'Orlando, FL',
-              startDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-              endDate: new Date(Date.now() + 32 * 86400000).toISOString(),
-              ageGroups: '["12U", "14U", "16U"]',
-              description: 'Premier summer tournament featuring top teams from across the Southeast',
-              entryFee: 850,
-              maxTeams: 32,
-              status: 'active',
-              createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-              user: {
-                id: 'user-1',
-                name: 'Tournament Director',
-                email: 'director@summerseries.com'
-              },
-              _count: { reviews: 1 }
-            },
-            {
-              id: '2',
-              name: 'Fall Classic Tournament',
-              location: 'Phoenix, AZ',
-              startDate: new Date(Date.now() + 60 * 86400000).toISOString(),
-              endDate: new Date(Date.now() + 62 * 86400000).toISOString(),
-              ageGroups: '["10U", "12U", "14U"]',
-              description: 'Annual fall tournament with excellent facilities',
-              entryFee: 750,
-              maxTeams: 24,
-              status: 'active',
-              createdAt: new Date(Date.now() - 45 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-              user: {
-                id: 'user-2',
-                name: 'Classic Organizer',
-                email: 'organizer@fallclassic.com'
-              },
-              _count: { reviews: 2 }
-            }
-          ],
+          tournaments: tournamentsData,
           pagination: {
             page: 1,
             limit: 20,
-            total: 2,
+            total: tournamentsData.length,
             totalPages: 1
           }
         },
@@ -283,14 +314,25 @@ export default function handler(req: any, res: any) {
       const tournamentIdMatch = url?.match(/\/admin\/tournaments\/([^\/\?]+)/);
       const tournamentId = tournamentIdMatch?.[1];
       
-      return res.status(200).json({
-        success: true,
-        data: {
-          id: tournamentId,
+      // Find and update the tournament
+      const tournamentIndex = tournamentsData.findIndex(t => t.id === tournamentId);
+      if (tournamentIndex !== -1) {
+        tournamentsData[tournamentIndex] = {
+          ...tournamentsData[tournamentIndex],
           ...req.body,
           updatedAt: new Date().toISOString()
-        },
-        message: 'Tournament updated successfully'
+        };
+        
+        return res.status(200).json({
+          success: true,
+          data: tournamentsData[tournamentIndex],
+          message: 'Tournament updated successfully'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Tournament not found'
       });
     }
 
@@ -298,9 +340,21 @@ export default function handler(req: any, res: any) {
       const tournamentIdMatch = url?.match(/\/admin\/tournaments\/([^\/\?]+)/);
       const tournamentId = tournamentIdMatch?.[1];
       
-      return res.status(200).json({
-        success: true,
-        message: 'Tournament deleted successfully'
+      // Find and remove the tournament
+      const tournamentIndex = tournamentsData.findIndex(t => t.id === tournamentId);
+      if (tournamentIndex !== -1) {
+        const deletedTournament = tournamentsData.splice(tournamentIndex, 1)[0];
+        
+        return res.status(200).json({
+          success: true,
+          data: deletedTournament,
+          message: 'Tournament deleted successfully'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Tournament not found'
       });
     }
   }
@@ -400,32 +454,15 @@ export default function handler(req: any, res: any) {
 
   if (url?.includes('/admin/pending-teams')) {
     if (req.method === 'GET') {
+      const pendingTeams = teamsData.filter(t => t.status === 'pending');
       return res.status(200).json({
         success: true,
         data: {
-          teams: [
-            {
-              id: '3',
-              name: 'Houston Heat',
-              location: 'Houston',
-              state: 'TX',
-              ageGroups: '["14U", "16U"]',
-              description: 'Competitive baseball team focused on player development',
-              status: 'pending',
-              createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-              user: {
-                id: 'user-3',
-                name: 'Director Martinez',
-                email: 'director@houstonheat.com'
-              },
-              _count: { reviews: 0 }
-            }
-          ],
+          teams: pendingTeams,
           pagination: {
             page: 1,
             limit: 20,
-            total: 1,
+            total: pendingTeams.length,
             totalPages: 1
           }
         },
@@ -437,18 +474,49 @@ export default function handler(req: any, res: any) {
   // Handle team approval/rejection
   if (url?.match(/\/admin\/teams\/\d+\/approve/) || url?.match(/\/teams\/\d+\/approve/)) {
     if (req.method === 'PUT') {
-      return res.status(200).json({
-        success: true,
-        message: 'Team approved successfully'
+      const teamIdMatch = url?.match(/\/teams\/(\d+)\/approve/);
+      const teamId = teamIdMatch?.[1];
+      
+      // Find and approve the team
+      const teamIndex = teamsData.findIndex(t => t.id === teamId);
+      if (teamIndex !== -1) {
+        teamsData[teamIndex].status = 'approved';
+        teamsData[teamIndex].updatedAt = new Date().toISOString();
+        
+        return res.status(200).json({
+          success: true,
+          data: teamsData[teamIndex],
+          message: 'Team approved successfully'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
       });
     }
   }
 
   if (url?.match(/\/admin\/teams\/\d+\/reject/) || url?.match(/\/teams\/\d+\/reject/)) {
     if (req.method === 'PUT') {
-      return res.status(200).json({
-        success: true,
-        message: 'Team rejected successfully'
+      const teamIdMatch = url?.match(/\/teams\/(\d+)\/reject/);
+      const teamId = teamIdMatch?.[1];
+      
+      // Find and reject the team (remove it)
+      const teamIndex = teamsData.findIndex(t => t.id === teamId);
+      if (teamIndex !== -1) {
+        const rejectedTeam = teamsData.splice(teamIndex, 1)[0];
+        
+        return res.status(200).json({
+          success: true,
+          data: rejectedTeam,
+          message: 'Team rejected successfully'
+        });
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Team not found'
       });
     }
   }

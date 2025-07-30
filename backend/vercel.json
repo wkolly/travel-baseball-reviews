@@ -16,6 +16,26 @@
       "dest": "api/register.ts"
     },
     {
+      "src": "/login(.*)",
+      "dest": "api/login.ts"
+    },
+    {
+      "src": "/register(.*)", 
+      "dest": "api/register.ts"
+    },
+    {
+      "src": "/teams(.*)",
+      "dest": "api/teams.ts"
+    },
+    {
+      "src": "/tournaments(.*)",
+      "dest": "api/tournaments.ts"
+    },
+    {
+      "src": "/reviews(.*)",
+      "dest": "api/reviews.ts"
+    },
+    {
       "src": "/api/auth(.*)",
       "dest": "api/auth.ts"
     },

@@ -29,11 +29,20 @@ export default function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         data: {
-          totalTeams: 2,
-          totalTournaments: 1,
-          totalUsers: 5,
-          totalReviews: 8,
-          pendingTeams: 0,
+          teams: {
+            total: 3,
+            approved: 2,
+            pending: 1
+          },
+          tournaments: {
+            total: 2
+          },
+          users: {
+            total: 5
+          },
+          reviews: {
+            total: 8
+          },
           recentActivity: [
             {
               id: '1',
@@ -46,6 +55,12 @@ export default function handler(req: any, res: any) {
               type: 'team_created',
               description: 'Dallas Diamonds team added',
               timestamp: new Date(Date.now() - 86400000).toISOString()
+            },
+            {
+              id: '3',
+              type: 'team_pending',
+              description: 'Houston Heat submitted for approval',
+              timestamp: new Date(Date.now() - 2 * 86400000).toISOString()
             }
           ]
         },
@@ -388,12 +403,30 @@ export default function handler(req: any, res: any) {
       return res.status(200).json({
         success: true,
         data: {
-          teams: [],
+          teams: [
+            {
+              id: '3',
+              name: 'Houston Heat',
+              location: 'Houston',
+              state: 'TX',
+              ageGroups: '["14U", "16U"]',
+              description: 'Competitive baseball team focused on player development',
+              status: 'pending',
+              createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
+              updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+              user: {
+                id: 'user-3',
+                name: 'Director Martinez',
+                email: 'director@houstonheat.com'
+              },
+              _count: { reviews: 0 }
+            }
+          ],
           pagination: {
             page: 1,
             limit: 20,
-            total: 0,
-            totalPages: 0
+            total: 1,
+            totalPages: 1
           }
         },
         message: 'Pending teams retrieved successfully'

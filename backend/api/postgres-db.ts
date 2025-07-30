@@ -47,10 +47,10 @@ export async function initializeDatabase() {
   return;
 }
 
-// Helper function to format team data for existing schema
+// Helper function to format team data for actual schema
 function formatTeam(row: any) {
   // Parse ageGroups if it's a JSON string
-  let ageGroups = row.ageGroups || row.age_groups || '[]';
+  let ageGroups = row.agegroups || row.ageGroups || '[]';
   if (typeof ageGroups === 'string') {
     try {
       ageGroups = JSON.parse(ageGroups);
@@ -66,16 +66,20 @@ function formatTeam(row: any) {
     location: row.location,
     state: row.state,
     ageGroups: ageGroups,
-    description: row.description,
+    description: row.description || '',
+    contact: row.contact || '',
     status: row.status,
-    createdAt: row.createdAt || row.created_at,
-    updatedAt: row.updatedAt || row.updated_at,
+    suggestedBy: row.suggestedby || row.suggestedBy,
+    approvedBy: row.approvedby || row.approvedBy,
+    approvedAt: row.approvedat || row.approvedAt,
+    createdAt: row.createdat || row.createdAt,
+    updatedAt: row.updatedat || row.updatedAt,
     user: {
-      id: row.user_id || row.createdBy,
-      name: row.user_name || row.contact,
-      email: row.user_email || 'contact@example.com'
+      id: row.createdby || row.createdBy || 'system-user',
+      name: row.contact || 'Team Contact',
+      email: 'contact@example.com'
     },
-    _count: { reviews: row.review_count || 0 }
+    _count: { reviews: 0 }
   };
 }
 
@@ -85,7 +89,7 @@ export async function getAllTeams() {
   
   try {
     console.log('Executing getAllTeams query...');
-    const result = await pool.query('SELECT * FROM teams ORDER BY "createdAt" DESC');
+    const result = await pool.query('SELECT * FROM teams ORDER BY createdat DESC');
     console.log('Query result:', { rowCount: result.rows.length });
     
     const formattedTeams = result.rows.map(formatTeam);
@@ -120,7 +124,7 @@ export async function getPendingTeams() {
   
   try {
     console.log('Executing getPendingTeams query...');
-    const result = await pool.query('SELECT * FROM teams WHERE status = $1 ORDER BY "createdAt" DESC', ['pending']);
+    const result = await pool.query('SELECT * FROM teams WHERE status = $1 ORDER BY createdat DESC', ['pending']);
     console.log('Pending query result:', { rowCount: result.rows.length });
     
     const formattedTeams = result.rows.map(formatTeam);
@@ -142,41 +146,46 @@ export async function createTeam(teamData: any) {
   const newTeam = {
     id: String(Date.now()),
     name: teamData.name || 'New Team',
-    location: teamData.location || '',
-    state: teamData.state || '',
-    ageGroups: teamData.ageGroups || '[]',
-    description: teamData.description || '',
-    contact: teamData.contact || 'Team Contact',
+    location: teamData.location || 'Unknown',
+    state: teamData.state || 'XX',
+    ageGroups: typeof teamData.ageGroups === 'string' ? teamData.ageGroups : JSON.stringify(teamData.ageGroups || []),
+    description: teamData.description || null,  // Can be null
+    contact: teamData.contact || null,          // Can be null
     status: 'pending',
-    createdAt: new Date(),
-    updatedAt: new Date(),
     createdBy: 'system-user'  // Use system user to satisfy foreign key constraint
   };
 
   try {
     await pool.query(`
-      INSERT INTO teams (id, name, location, state, "ageGroups", description, contact, status, "createdAt", "updatedAt", "createdBy")
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO teams (id, name, location, state, agegroups, description, contact, status, createdby)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
       newTeam.id, newTeam.name, newTeam.location, newTeam.state, newTeam.ageGroups,
-      newTeam.description, newTeam.contact, newTeam.status, newTeam.createdAt, 
-      newTeam.updatedAt, newTeam.createdBy
+      newTeam.description, newTeam.contact, newTeam.status, newTeam.createdBy
     ]);
 
+    // Fetch the created team to get timestamps
+    const result = await pool.query('SELECT * FROM teams WHERE id = $1', [newTeam.id]);
+    if (result.rows.length > 0) {
+      return formatTeam(result.rows[0]);
+    }
+
+    // Fallback if fetch fails
     return {
       id: newTeam.id,
       name: newTeam.name,
       location: newTeam.location,
       state: newTeam.state,
-      ageGroups: newTeam.ageGroups,
+      ageGroups: JSON.parse(newTeam.ageGroups),
       description: newTeam.description,
+      contact: newTeam.contact,
       status: newTeam.status,
-      createdAt: newTeam.createdAt,
-      updatedAt: newTeam.updatedAt,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       user: {
         id: newTeam.createdBy,
-        name: newTeam.contact,
-        email: teamData.email || 'contact@example.com'
+        name: newTeam.contact || 'Team Contact',
+        email: 'contact@example.com'
       },
       _count: { reviews: 0 }
     };
@@ -194,19 +203,18 @@ export async function updateTeam(id: string, updates: any) {
     const currentTeam = await getTeamById(id);
     if (!currentTeam) return null;
 
-    // Update the team using existing schema
+    // Update the team using actual schema
     await pool.query(`
       UPDATE teams 
-      SET name = $1, location = $2, state = $3, "ageGroups" = $4, description = $5, status = $6, "updatedAt" = $7
-      WHERE id = $8
+      SET name = $1, location = $2, state = $3, agegroups = $4, description = $5, status = $6, updatedat = CURRENT_TIMESTAMP
+      WHERE id = $7
     `, [
       updates.name || currentTeam.name,
       updates.location || currentTeam.location,
       updates.state || currentTeam.state,
-      updates.ageGroups || currentTeam.ageGroups,
+      typeof updates.ageGroups === 'string' ? updates.ageGroups : JSON.stringify(updates.ageGroups || currentTeam.ageGroups),
       updates.description || currentTeam.description,
       updates.status || currentTeam.status,
-      new Date(),
       id
     ]);
 

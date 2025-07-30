@@ -161,74 +161,74 @@ export const tournamentReviewsAPI = {
 // Admin API
 export const adminAPI = {
   getStats: async (): Promise<ApiResponse> => {
-    const response = await api.get('/admin/stats');
+    const response = await api.get('/api/admin/stats');
     return response.data;
   },
   
   getPendingTeams: async (page = 1, limit = 20): Promise<ApiResponse> => {
-    const response = await api.get('/admin/pending-teams', {
+    const response = await api.get('/api/admin/pending-teams', {
       params: { page, limit }
     });
     return response.data;
   },
   
   approveTeam: async (teamId: string): Promise<ApiResponse> => {
-    const response = await api.put(`/admin/teams/${teamId}/approve`);
+    const response = await api.put(`/api/admin/teams/${teamId}/approve`);
     return response.data;
   },
   
   rejectTeam: async (teamId: string, reason?: string): Promise<ApiResponse> => {
-    const response = await api.put(`/admin/teams/${teamId}/reject`, { reason });
+    const response = await api.put(`/api/admin/teams/${teamId}/reject`, { reason });
     return response.data;
   },
 
   getUsers: async (page = 1, limit = 20): Promise<ApiResponse> => {
-    const response = await api.get('/admin/users', { params: { page, limit } });
+    const response = await api.get('/api/admin/users', { params: { page, limit } });
     return response.data;
   },
 
   getAllTeams: async (page = 1, limit = 20, status?: string): Promise<ApiResponse> => {
-    const response = await api.get('/admin/teams', { params: { page, limit, status } });
+    const response = await api.get('/api/admin/teams', { params: { page, limit, status } });
     return response.data;
   },
 
   getAllTournaments: async (page = 1, limit = 20): Promise<ApiResponse> => {
-    const response = await api.get('/admin/tournaments', { params: { page, limit } });
+    const response = await api.get('/api/admin/tournaments', { params: { page, limit } });
     return response.data;
   },
 
   updateTeam: async (teamId: string, data: any): Promise<ApiResponse> => {
-    const response = await api.put(`/admin/teams/${teamId}`, data);
+    const response = await api.put(`/api/admin/teams/${teamId}`, data);
     return response.data;
   },
 
   deleteTeam: async (teamId: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/admin/teams/${teamId}`);
+    const response = await api.delete(`/api/admin/teams/${teamId}`);
     return response.data;
   },
 
   updateTournament: async (tournamentId: string, data: any): Promise<ApiResponse> => {
-    const response = await api.put(`/admin/tournaments/${tournamentId}`, data);
+    const response = await api.put(`/api/admin/tournaments/${tournamentId}`, data);
     return response.data;
   },
 
   deleteTournament: async (tournamentId: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/admin/tournaments/${tournamentId}`);
+    const response = await api.delete(`/api/admin/tournaments/${tournamentId}`);
     return response.data;
   },
 
   getAllReviews: async (page = 1, limit = 20, type?: string): Promise<ApiResponse> => {
-    const response = await api.get('/admin/reviews', { params: { page, limit, type } });
+    const response = await api.get('/api/admin/reviews', { params: { page, limit, type } });
     return response.data;
   },
 
   deleteTeamReview: async (reviewId: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/admin/reviews/teams/${reviewId}`);
+    const response = await api.delete(`/api/admin/reviews/teams/${reviewId}`);
     return response.data;
   },
 
   deleteTournamentReview: async (reviewId: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/admin/reviews/tournaments/${reviewId}`);
+    const response = await api.delete(`/api/admin/reviews/tournaments/${reviewId}`);
     return response.data;
   }
 };

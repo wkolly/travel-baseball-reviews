@@ -36,7 +36,7 @@ export default async function handler(req: any, res: any) {
   const { url } = req;
   console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
 
-  // Debug endpoint to test database connection
+  // Debug endpoint to check database schema
   if (url?.includes('/admin/debug-db')) {
     try {
       const { Client } = await import('pg');
@@ -46,36 +46,43 @@ export default async function handler(req: any, res: any) {
       });
       
       await client.connect();
-      const result = await client.query('SELECT NOW()');
+      
+      // Check if teams table exists and what columns it has
+      const tablesResult = await client.query(`
+        SELECT table_name FROM information_schema.tables 
+        WHERE table_schema = 'public' AND table_name = 'teams'
+      `);
+      
+      let columnsInfo = null;
+      if (tablesResult.rows.length > 0) {
+        const columnsResult = await client.query(`
+          SELECT column_name, data_type FROM information_schema.columns 
+          WHERE table_name = 'teams' AND table_schema = 'public'
+          ORDER BY ordinal_position
+        `);
+        columnsInfo = columnsResult.rows;
+      }
+      
       await client.end();
       
       return res.status(200).json({
         success: true,
         data: {
-          hasDatabaseUrl: !!process.env.DATABASE_URL,
-          databaseUrlLength: process.env.DATABASE_URL?.length || 0,
-          databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'not set',
           connectionTest: 'SUCCESS',
-          currentTime: result.rows[0].now,
-          nodeEnv: process.env.NODE_ENV,
+          teamsTableExists: tablesResult.rows.length > 0,
+          columns: columnsInfo,
           timestamp: new Date().toISOString()
         },
-        message: 'Database connection successful'
+        message: 'Database schema check'
       });
     } catch (error) {
       return res.status(500).json({
         success: false,
         data: {
-          hasDatabaseUrl: !!process.env.DATABASE_URL,
-          databaseUrlLength: process.env.DATABASE_URL?.length || 0,
-          databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'not set',
-          connectionTest: 'FAILED',
           error: error instanceof Error ? error.message : String(error),
-          errorCode: (error as any)?.code,
-          nodeEnv: process.env.NODE_ENV,
-          timestamp: new Date().toISOString()
+          errorCode: (error as any)?.code
         },
-        message: 'Database connection failed'
+        message: 'Database schema check failed'
       });
     }
   }

@@ -138,12 +138,24 @@ export default function handler(req: any, res: any) {
               createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
               _count: { reviews: 2 }
+            },
+            {
+              id: '3',
+              name: 'Houston Heat',
+              location: 'Houston',
+              state: 'TX',
+              ageGroups: '["14U", "16U"]',
+              description: 'Competitive baseball team focused on player development',
+              status: 'pending',
+              createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
+              updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+              _count: { reviews: 0 }
             }
           ],
           pagination: {
             page: 1,
             limit: 20,
-            total: 2,
+            total: 3,
             totalPages: 1
           }
         },
@@ -197,12 +209,27 @@ export default function handler(req: any, res: any) {
               createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
               _count: { reviews: 1 }
+            },
+            {
+              id: '2',
+              name: 'Fall Classic Tournament',
+              location: 'Phoenix, AZ',
+              startDate: new Date(Date.now() + 60 * 86400000).toISOString(),
+              endDate: new Date(Date.now() + 62 * 86400000).toISOString(),
+              ageGroups: '["10U", "12U", "14U"]',
+              description: 'Annual fall tournament with excellent facilities',
+              entryFee: 750,
+              maxTeams: 24,
+              status: 'active',
+              createdAt: new Date(Date.now() - 45 * 86400000).toISOString(),
+              updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+              _count: { reviews: 2 }
             }
           ],
           pagination: {
             page: 1,
             limit: 20,
-            total: 1,
+            total: 2,
             totalPages: 1
           }
         },

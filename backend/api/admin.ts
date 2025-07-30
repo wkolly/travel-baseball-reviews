@@ -257,21 +257,44 @@ export default async function handler(req: any, res: any) {
     console.log('Processing admin teams request:', { method: req.method, url, hasApprove: url?.includes('/approve'), hasReject: url?.includes('/reject') });
     
     if (req.method === 'GET') {
-      console.log('Admin teams request - returning teams data');
-      const teams = await getAllTeams();
-      return res.status(200).json({
-        success: true,
-        data: {
-          teams: teams,
-          pagination: {
-            page: 1,
-            limit: 20,
-            total: teams.length,
-            totalPages: 1
-          }
-        },
-        message: 'Teams retrieved successfully'
-      });
+      try {
+        console.log('Admin teams request - returning teams data');
+        const teams = await getAllTeams();
+        console.log('All teams result:', teams);
+        
+        // Ensure we always return an array
+        const safeTeams = Array.isArray(teams) ? teams : [];
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            teams: safeTeams,
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: safeTeams.length,
+              totalPages: 1
+            }
+          },
+          message: 'Teams retrieved successfully'
+        });
+      } catch (error) {
+        console.error('Error fetching all teams:', error);
+        return res.status(200).json({
+          success: true,
+          data: {
+            teams: [],
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 1
+            }
+          },
+          message: 'No teams found (error occurred)',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
 
     // Handle team suggestions from the public form
@@ -572,20 +595,44 @@ export default async function handler(req: any, res: any) {
 
   if (url?.includes('/admin/pending-teams')) {
     if (req.method === 'GET') {
-      const pendingTeams = await getPendingTeams();
-      return res.status(200).json({
-        success: true,
-        data: {
-          teams: pendingTeams,
-          pagination: {
-            page: 1,
-            limit: 20,
-            total: pendingTeams.length,
-            totalPages: 1
-          }
-        },
-        message: 'Pending teams retrieved successfully'
-      });
+      try {
+        console.log('Fetching pending teams...');
+        const pendingTeams = await getPendingTeams();
+        console.log('Pending teams result:', pendingTeams);
+        
+        // Ensure we always return an array
+        const safeTeams = Array.isArray(pendingTeams) ? pendingTeams : [];
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            teams: safeTeams,
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: safeTeams.length,
+              totalPages: 1
+            }
+          },
+          message: 'Pending teams retrieved successfully'
+        });
+      } catch (error) {
+        console.error('Error fetching pending teams:', error);
+        return res.status(200).json({
+          success: true,
+          data: {
+            teams: [],
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 1
+            }
+          },
+          message: 'No pending teams found (error occurred)',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 

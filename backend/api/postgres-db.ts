@@ -84,11 +84,20 @@ export async function getAllTeams() {
   const pool = getPool();
   
   try {
+    console.log('Executing getAllTeams query...');
     const result = await pool.query('SELECT * FROM teams ORDER BY "createdAt" DESC');
-    return result.rows.map(formatTeam);
+    console.log('Query result:', { rowCount: result.rows.length });
+    
+    const formattedTeams = result.rows.map(formatTeam);
+    console.log('Formatted teams:', formattedTeams);
+    
+    return formattedTeams;
   } catch (error) {
     console.error('Error getting all teams:', error);
-    throw error;
+    console.error('Database URL check:', process.env.DATABASE_URL ? 'Set' : 'Not Set');
+    
+    // Return empty array instead of throwing to prevent crashes
+    return [];
   }
 }
 
@@ -110,11 +119,20 @@ export async function getPendingTeams() {
   const pool = getPool();
   
   try {
+    console.log('Executing getPendingTeams query...');
     const result = await pool.query('SELECT * FROM teams WHERE status = $1 ORDER BY "createdAt" DESC', ['pending']);
-    return result.rows.map(formatTeam);
+    console.log('Pending query result:', { rowCount: result.rows.length });
+    
+    const formattedTeams = result.rows.map(formatTeam);
+    console.log('Formatted pending teams:', formattedTeams);
+    
+    return formattedTeams;
   } catch (error) {
     console.error('Error getting pending teams:', error);
-    throw error;
+    console.error('Database URL check:', process.env.DATABASE_URL ? 'Set' : 'Not Set');
+    
+    // Return empty array instead of throwing to prevent crashes
+    return [];
   }
 }
 

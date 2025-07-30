@@ -8,6 +8,14 @@
   ],
   "routes": [
     {
+      "src": "/api/login(.*)",
+      "dest": "api/login.ts"
+    },
+    {
+      "src": "/api/register(.*)", 
+      "dest": "api/register.ts"
+    },
+    {
       "src": "/api/auth(.*)",
       "dest": "api/auth.ts"
     },

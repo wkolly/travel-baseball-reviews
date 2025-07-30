@@ -126,6 +126,11 @@ export default function handler(req: any, res: any) {
               status: 'approved',
               createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+              user: {
+                id: 'user-1',
+                name: 'Coach Thompson',
+                email: 'coach@atlantathunder.com'
+              },
               _count: { reviews: 3 }
             },
             {
@@ -138,6 +143,11 @@ export default function handler(req: any, res: any) {
               status: 'approved',
               createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+              user: {
+                id: 'user-2', 
+                name: 'Manager Davis',
+                email: 'manager@dallasdiamonds.com'
+              },
               _count: { reviews: 2 }
             },
             {
@@ -150,6 +160,11 @@ export default function handler(req: any, res: any) {
               status: 'pending',
               createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+              user: {
+                id: 'user-3',
+                name: 'Director Martinez',
+                email: 'director@houstonheat.com'
+              },
               _count: { reviews: 0 }
             }
           ],
@@ -210,6 +225,11 @@ export default function handler(req: any, res: any) {
               status: 'active',
               createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+              user: {
+                id: 'user-1',
+                name: 'Tournament Director',
+                email: 'director@summerseries.com'
+              },
               _count: { reviews: 1 }
             },
             {
@@ -225,6 +245,11 @@ export default function handler(req: any, res: any) {
               status: 'active',
               createdAt: new Date(Date.now() - 45 * 86400000).toISOString(),
               updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+              user: {
+                id: 'user-2',
+                name: 'Classic Organizer',
+                email: 'organizer@fallclassic.com'
+              },
               _count: { reviews: 2 }
             }
           ],

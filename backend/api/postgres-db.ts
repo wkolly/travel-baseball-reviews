@@ -3,7 +3,7 @@ import { Pool, Client } from 'pg';
 // Database connection configuration
 const dbConfig = {
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: process.env.DATABASE_URL?.includes('neon.tech') ? { rejectUnauthorized: false } : false,
 };
 
 let pool: Pool | null = null;
@@ -18,11 +18,18 @@ function getPool() {
 
 // Initialize database tables
 export async function initializeDatabase() {
+  console.log('Attempting database connection...');
+  console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+  console.log('Database config:', { 
+    hasConnectionString: !!dbConfig.connectionString,
+    ssl: dbConfig.ssl 
+  });
+  
   const client = new Client(dbConfig);
   
   try {
     await client.connect();
-    console.log('Connected to PostgreSQL database');
+    console.log('✅ Connected to PostgreSQL database successfully');
 
     // Create teams table
     await client.query(`
@@ -114,9 +121,14 @@ export async function initializeDatabase() {
       ]);
     }
 
-    console.log('Database initialized successfully');
+    console.log('✅ Database initialized successfully');
   } catch (error) {
-    console.error('Error initializing database:', error);
+    console.error('❌ Error initializing database:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      code: (error as any)?.code,
+      stack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   } finally {
     await client.end();

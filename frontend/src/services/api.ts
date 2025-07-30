@@ -52,12 +52,12 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
-    const response = await api.post('/auth/register', data);
+    const response = await api.post('/api/register', data);
     return response.data;
   },
   
   login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
-    const response = await api.post('/auth/login', data);
+    const response = await api.post('/api/login', data);
     return response.data;
   },
   
@@ -75,12 +75,12 @@ export const authAPI = {
 // Teams API
 export const teamsAPI = {
   getTeams: async (query?: TeamQuery): Promise<ApiResponse> => {
-    const response = await api.get('/teams', { params: query });
+    const response = await api.get('/api/teams', { params: query });
     return response.data;
   },
   
   getTeam: async (id: string): Promise<ApiResponse<Team>> => {
-    const response = await api.get(`/teams/${id}`);
+    const response = await api.get(`/api/teams/${id}`);
     return response.data;
   },
   
@@ -128,12 +128,12 @@ export const reviewsAPI = {
 // Tournaments API
 export const tournamentsAPI = {
   getTournaments: async (query?: { search?: string; page?: number; limit?: number }): Promise<ApiResponse> => {
-    const response = await api.get('/tournaments', { params: query });
+    const response = await api.get('/api/tournaments', { params: query });
     return response.data;
   },
   
   getTournament: async (id: string): Promise<ApiResponse<Tournament>> => {
-    const response = await api.get(`/tournaments/${id}`);
+    const response = await api.get(`/api/tournaments/${id}`);
     return response.data;
   },
   

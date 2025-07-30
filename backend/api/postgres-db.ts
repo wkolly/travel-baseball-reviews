@@ -49,12 +49,23 @@ export async function initializeDatabase() {
 
 // Helper function to format team data for existing schema
 function formatTeam(row: any) {
+  // Parse ageGroups if it's a JSON string
+  let ageGroups = row.ageGroups || row.age_groups || '[]';
+  if (typeof ageGroups === 'string') {
+    try {
+      ageGroups = JSON.parse(ageGroups);
+    } catch (e) {
+      console.warn('Failed to parse ageGroups JSON:', ageGroups);
+      ageGroups = [];
+    }
+  }
+
   return {
     id: row.id,
     name: row.name,
     location: row.location,
     state: row.state,
-    ageGroups: row.ageGroups || row.age_groups,
+    ageGroups: ageGroups,
     description: row.description,
     status: row.status,
     createdAt: row.createdAt || row.created_at,

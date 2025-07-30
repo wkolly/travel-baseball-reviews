@@ -170,9 +170,16 @@ export default async function handler(req: any, res: any) {
       
       console.log('Team created in database:', newTeam);
       
+      // Ensure the response data is properly serializable
+      const responseData = {
+        ...newTeam,
+        ageGroups: Array.isArray(newTeam.ageGroups) ? newTeam.ageGroups : 
+                   (typeof newTeam.ageGroups === 'string' ? JSON.parse(newTeam.ageGroups || '[]') : [])
+      };
+      
       return res.status(201).json({
         success: true,
-        data: newTeam,
+        data: responseData,
         message: 'Team suggestion submitted successfully and is now pending admin approval!'
       });
     } catch (error) {
@@ -182,11 +189,23 @@ export default async function handler(req: any, res: any) {
         stack: error instanceof Error ? error.stack : undefined
       });
       
-      // Fallback - create a simple response
+      // Fallback - create a simple response with safe JSON
       const newTeam = {
         id: 'fallback-' + Date.now(),
         name: req.body?.name || 'New Team',
-        status: 'pending'
+        location: req.body?.location || '',
+        state: req.body?.state || '',
+        ageGroups: Array.isArray(req.body?.ageGroups) ? req.body.ageGroups : [],
+        description: req.body?.description || '',
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        user: {
+          id: 'fallback-user',
+          name: req.body?.contact || 'Contact',
+          email: 'contact@example.com'
+        },
+        _count: { reviews: 0 }
       };
       
       return res.status(201).json({

@@ -1,6 +1,17 @@
-import { teamsData, tournamentsData } from './shared-data';
+import { 
+  getAllTeams, 
+  getAllTournaments,
+  getPendingTeams, 
+  createTeam, 
+  updateTeam, 
+  deleteTeam, 
+  approveTeam, 
+  rejectTeam,
+  getTeamStats,
+  initializeDatabase
+} from './postgres-db';
 
-export default function handler(req: any, res: any) {
+export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
     'https://travelbaseballreview.com',
@@ -25,22 +36,51 @@ export default function handler(req: any, res: any) {
   const { url } = req;
   console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
 
+  // Initialize database on first request
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    console.error('Database initialization error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Database connection error'
+    });
+  }
+
+  // Handle team suggestions at top level  
+  if (req.method === 'POST' && url?.includes('/suggest')) {
+    console.log('Team suggestion received at top level:', req.body);
+    
+    try {
+      const newTeam = await createTeam(req.body);
+      console.log('Team added to database:', newTeam);
+      
+      return res.status(201).json({
+        success: true,
+        data: newTeam,
+        message: 'Team suggestion added to pending list successfully'
+      });
+    } catch (error) {
+      console.error('Error creating team:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error creating team suggestion'
+      });
+    }
+  }
+
   // Route handling based on URL path
   if (url?.includes('/admin/stats')) {
     if (req.method === 'GET') {
-      const approvedTeams = teamsData.filter(t => t.status === 'approved').length;
-      const pendingTeams = teamsData.filter(t => t.status === 'pending').length;
+      const teamStats = await getTeamStats();
+      const tournaments = await getAllTournaments();
       
       return res.status(200).json({
         success: true,
         data: {
-          teams: {
-            total: teamsData.length,
-            approved: approvedTeams,
-            pending: pendingTeams
-          },
+          teams: teamStats,
           tournaments: {
-            total: tournamentsData.length
+            total: tournaments.length
           },
           users: {
             total: 5
@@ -129,17 +169,21 @@ export default function handler(req: any, res: any) {
     }
   }
 
+
   if (url?.includes('/admin/teams')) {
+    console.log('Processing admin teams request:', { method: req.method, url, hasApprove: url?.includes('/approve'), hasReject: url?.includes('/reject') });
+    
     if (req.method === 'GET') {
       console.log('Admin teams request - returning teams data');
+      const teams = await getAllTeams();
       return res.status(200).json({
         success: true,
         data: {
-          teams: teamsData,
+          teams: teams,
           pagination: {
             page: 1,
             limit: 20,
-            total: teamsData.length,
+            total: teams.length,
             totalPages: 1
           }
         },
@@ -147,66 +191,153 @@ export default function handler(req: any, res: any) {
       });
     }
 
+    // Handle team suggestions from the public form
+    if (req.method === 'POST' && (url?.includes('/admin/teams/suggest') || url?.includes('/teams/suggest'))) {
+      console.log('Team suggestion received in admin:', req.body);
+      
+      try {
+        const newTeam = await createTeam(req.body);
+        console.log('Team added to database:', newTeam);
+        
+        return res.status(201).json({
+          success: true,
+          data: newTeam,
+          message: 'Team suggestion added to pending list successfully'
+        });
+      } catch (error) {
+        console.error('Error creating team:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error creating team suggestion'
+        });
+      }
+    }
+
+    // Handle team approval first
+    if (req.method === 'PUT' && url?.includes('/approve')) {
+      const teamIdMatch = url?.match(/\/admin\/teams\/([^\/]+)\/approve/);
+      const teamId = teamIdMatch?.[1];
+      
+      try {
+        const approvedTeam = await approveTeam(teamId);
+        if (approvedTeam) {
+          return res.status(200).json({
+            success: true,
+            data: approvedTeam,
+            message: 'Team approved successfully'
+          });
+        }
+        
+        return res.status(404).json({
+          success: false,
+          message: 'Team not found'
+        });
+      } catch (error) {
+        console.error('Error approving team:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error approving team'
+        });
+      }
+    }
+
+    // Handle team rejection
+    if (req.method === 'PUT' && url?.includes('/reject')) {
+      const teamIdMatch = url?.match(/\/admin\/teams\/([^\/]+)\/reject/);
+      const teamId = teamIdMatch?.[1];
+      
+      try {
+        const rejectedTeam = await rejectTeam(teamId);
+        if (rejectedTeam) {
+          return res.status(200).json({
+            success: true,
+            data: rejectedTeam,
+            message: 'Team rejected successfully'
+          });
+        }
+        
+        return res.status(404).json({
+          success: false,
+          message: 'Team not found'
+        });
+      } catch (error) {
+        console.error('Error rejecting team:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error rejecting team'
+        });
+      }
+    }
+
+    // Handle general team updates
     if (req.method === 'PUT') {
       const teamIdMatch = url?.match(/\/admin\/teams\/([^\/\?]+)/);
       const teamId = teamIdMatch?.[1];
       
-      // Find and update the team
-      const teamIndex = teamsData.findIndex(t => t.id === teamId);
-      if (teamIndex !== -1) {
-        teamsData[teamIndex] = {
-          ...teamsData[teamIndex],
-          ...req.body,
-          updatedAt: new Date().toISOString()
-        };
+      try {
+        const updatedTeam = await updateTeam(teamId, req.body);
+        if (updatedTeam) {
+          return res.status(200).json({
+            success: true,
+            data: updatedTeam,
+            message: 'Team updated successfully'
+          });
+        }
         
-        return res.status(200).json({
-          success: true,
-          data: teamsData[teamIndex],
-          message: 'Team updated successfully'
+        return res.status(404).json({
+          success: false,
+          message: 'Team not found'
+        });
+      } catch (error) {
+        console.error('Error updating team:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error updating team'
         });
       }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Team not found'
-      });
     }
+
 
     if (req.method === 'DELETE') {
       const teamIdMatch = url?.match(/\/admin\/teams\/([^\/\?]+)/);
       const teamId = teamIdMatch?.[1];
       
-      // Find and remove the team
-      const teamIndex = teamsData.findIndex(t => t.id === teamId);
-      if (teamIndex !== -1) {
-        const deletedTeam = teamsData.splice(teamIndex, 1)[0];
+      try {
+        const deletedTeam = await deleteTeam(teamId);
+        if (deletedTeam) {
+          return res.status(200).json({
+            success: true,
+            data: deletedTeam,
+            message: 'Team deleted successfully'
+          });
+        }
         
-        return res.status(200).json({
-          success: true,
-          data: deletedTeam,
-          message: 'Team deleted successfully'
+        return res.status(404).json({
+          success: false,
+          message: 'Team not found'
+        });
+      } catch (error) {
+        console.error('Error deleting team:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error deleting team'
         });
       }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Team not found'
-      });
     }
   }
 
   if (url?.includes('/admin/tournaments')) {
     if (req.method === 'GET') {
       console.log('Admin tournaments request - returning tournaments data');
+      const tournaments = await getAllTournaments();
       return res.status(200).json({
         success: true,
         data: {
-          tournaments: tournamentsData,
+          tournaments: tournaments,
           pagination: {
             page: 1,
             limit: 20,
-            total: tournamentsData.length,
+            total: tournaments.length,
             totalPages: 1
           }
         },
@@ -358,7 +489,7 @@ export default function handler(req: any, res: any) {
 
   if (url?.includes('/admin/pending-teams')) {
     if (req.method === 'GET') {
-      const pendingTeams = teamsData.filter(t => t.status === 'pending');
+      const pendingTeams = await getPendingTeams();
       return res.status(200).json({
         success: true,
         data: {
@@ -375,55 +506,6 @@ export default function handler(req: any, res: any) {
     }
   }
 
-  // Handle team approval/rejection
-  if (url?.match(/\/admin\/teams\/\d+\/approve/) || url?.match(/\/teams\/\d+\/approve/)) {
-    if (req.method === 'PUT') {
-      const teamIdMatch = url?.match(/\/admin\/teams\/(\d+)\/approve/) || url?.match(/\/teams\/(\d+)\/approve/);
-      const teamId = teamIdMatch?.[1];
-      
-      // Find and approve the team
-      const teamIndex = teamsData.findIndex(t => t.id === teamId);
-      if (teamIndex !== -1) {
-        teamsData[teamIndex].status = 'approved';
-        teamsData[teamIndex].updatedAt = new Date().toISOString();
-        
-        return res.status(200).json({
-          success: true,
-          data: teamsData[teamIndex],
-          message: 'Team approved successfully'
-        });
-      }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Team not found'
-      });
-    }
-  }
-
-  if (url?.match(/\/admin\/teams\/\d+\/reject/) || url?.match(/\/teams\/\d+\/reject/)) {
-    if (req.method === 'PUT') {
-      const teamIdMatch = url?.match(/\/admin\/teams\/(\d+)\/reject/) || url?.match(/\/teams\/(\d+)\/reject/);
-      const teamId = teamIdMatch?.[1];
-      
-      // Find and reject the team (remove it)
-      const teamIndex = teamsData.findIndex(t => t.id === teamId);
-      if (teamIndex !== -1) {
-        const rejectedTeam = teamsData.splice(teamIndex, 1)[0];
-        
-        return res.status(200).json({
-          success: true,
-          data: rejectedTeam,
-          message: 'Team rejected successfully'
-        });
-      }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Team not found'
-      });
-    }
-  }
 
   // Handle review deletion endpoints
   if (url?.includes('/admin/reviews/teams/')) {
@@ -464,6 +546,13 @@ export default function handler(req: any, res: any) {
     success: false,
     message: 'Admin endpoint not found',
     url: url,
-    method: req.method
+    method: req.method,
+    debugInfo: {
+      includesAdminTeams: url?.includes('/admin/teams'),
+      includesApprove: url?.includes('/approve'),
+      includesReject: url?.includes('/reject'),
+      includesSuggest: url?.includes('/suggest'),
+      fullUrlCheck: url?.includes('/admin/teams/suggest')
+    }
   });
 }

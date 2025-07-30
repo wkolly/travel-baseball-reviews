@@ -41,6 +41,10 @@ export default function handler(req: any, res: any) {
             description: 'Premier summer tournament for youth baseball',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            averageRating: 4.5,
+            avgRating: 4.5,
+            rating: 4.5,
+            overallRating: 4.5,
             _count: { 
               reviews: 3 
             },
@@ -50,6 +54,8 @@ export default function handler(req: any, res: any) {
                 tournamentId: '1',
                 userId: null,
                 overall_rating: 4.5,
+                rating: 4.5,
+                overallRating: 4.5,
                 comment: 'Great tournament organization and facilities',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -59,6 +65,8 @@ export default function handler(req: any, res: any) {
                 tournamentId: '1',
                 userId: null,
                 overall_rating: 5.0,
+                rating: 5.0,
+                overallRating: 5.0,
                 comment: 'Excellent competition and well run event',  
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -68,6 +76,8 @@ export default function handler(req: any, res: any) {
                 tournamentId: '1',
                 userId: null,
                 overall_rating: 4.0,
+                rating: 4.0,
+                overallRating: 4.0,
                 comment: 'Good tournament overall, nice fields',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -81,6 +91,10 @@ export default function handler(req: any, res: any) {
             description: 'Competitive fall tournament series',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            averageRating: 4.5,
+            avgRating: 4.5,
+            rating: 4.5,
+            overallRating: 4.5,
             _count: { 
               reviews: 2 
             },
@@ -90,6 +104,8 @@ export default function handler(req: any, res: any) {
                 tournamentId: '2',
                 userId: null,
                 overall_rating: 4.8,
+                rating: 4.8,
+                overallRating: 4.8,
                 comment: 'Well organized tournament with great competition',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -99,6 +115,8 @@ export default function handler(req: any, res: any) {
                 tournamentId: '2',
                 userId: null,
                 overall_rating: 4.2,
+                rating: 4.2,
+                overallRating: 4.2,
                 comment: 'Nice facilities and good tournament structure',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()

@@ -12,26 +12,27 @@ import {
 } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
-  // Set CORS headers - allow multiple origins
-  const allowedOrigins = [
-    'https://travelbaseballreview.com',
-    'https://www.travelbaseballreview.com',
-    'https://travel-baseball-reviews-frontend.vercel.app',
-    process.env.FRONTEND_URL
-  ].filter(Boolean);
-  
-  const origin = req.headers.origin;
-  const allowedOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
-  
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  try {
+    // Set CORS headers - allow multiple origins
+    const allowedOrigins = [
+      'https://travelbaseballreview.com',
+      'https://www.travelbaseballreview.com',
+      'https://travel-baseball-reviews-frontend.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean);
+    
+    const origin = req.headers.origin;
+    const allowedOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+    
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
 
   const { url } = req;
   console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
@@ -624,6 +625,12 @@ export default async function handler(req: any, res: any) {
     body: req.body 
   });
   
+  // Ensure CORS headers are set on 404 responses too
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
   return res.status(404).json({
     success: false,
     message: 'Admin endpoint not found',
@@ -637,4 +644,19 @@ export default async function handler(req: any, res: any) {
       fullUrlCheck: url?.includes('/admin/teams/suggest')
     }
   });
+  
+  } catch (error) {
+    console.error('Admin handler error:', error);
+    
+    // Ensure CORS headers even on errors
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error in admin handler',
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
 }

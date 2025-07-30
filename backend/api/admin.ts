@@ -474,7 +474,7 @@ export default function handler(req: any, res: any) {
   // Handle team approval/rejection
   if (url?.match(/\/admin\/teams\/\d+\/approve/) || url?.match(/\/teams\/\d+\/approve/)) {
     if (req.method === 'PUT') {
-      const teamIdMatch = url?.match(/\/teams\/(\d+)\/approve/);
+      const teamIdMatch = url?.match(/\/admin\/teams\/(\d+)\/approve/) || url?.match(/\/teams\/(\d+)\/approve/);
       const teamId = teamIdMatch?.[1];
       
       // Find and approve the team
@@ -499,7 +499,7 @@ export default function handler(req: any, res: any) {
 
   if (url?.match(/\/admin\/teams\/\d+\/reject/) || url?.match(/\/teams\/\d+\/reject/)) {
     if (req.method === 'PUT') {
-      const teamIdMatch = url?.match(/\/teams\/(\d+)\/reject/);
+      const teamIdMatch = url?.match(/\/admin\/teams\/(\d+)\/reject/) || url?.match(/\/teams\/(\d+)\/reject/);
       const teamId = teamIdMatch?.[1];
       
       // Find and reject the team (remove it)

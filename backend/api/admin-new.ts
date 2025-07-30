@@ -131,7 +131,8 @@ export default function handler(req: any, res: any) {
                 name: 'Coach Thompson',
                 email: 'coach@atlantathunder.com'
               },
-              _count: { reviews: 3 }
+              _count: { reviews: 3 },
+              testField: 'DEPLOYMENT_WORKING'
             },
             {
               id: '2',

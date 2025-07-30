@@ -4,10 +4,6 @@
     {
       "src": "api/*.ts",
       "use": "@vercel/node"
-    },
-    {
-      "src": "api/admin/*.ts",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -36,28 +32,8 @@
       "dest": "api/signup.ts"
     },
     {
-      "src": "/api/admin/stats(.*)",
-      "dest": "api/admin/stats.ts"
-    },
-    {
-      "src": "/api/admin/users(.*)",
-      "dest": "api/admin/users.ts"
-    },
-    {
-      "src": "/api/admin/teams(.*)",
-      "dest": "api/admin/teams.ts"
-    },
-    {
-      "src": "/api/admin/tournaments(.*)",
-      "dest": "api/admin/tournaments.ts"
-    },
-    {
-      "src": "/api/admin/reviews(.*)",
-      "dest": "api/admin/reviews.ts"
-    },
-    {
-      "src": "/api/admin/pending-teams(.*)",
-      "dest": "api/admin/pending-teams.ts"
+      "src": "/api/admin(.*)",
+      "dest": "api/admin.ts"
     },
     {
       "src": "/teams(.*)",

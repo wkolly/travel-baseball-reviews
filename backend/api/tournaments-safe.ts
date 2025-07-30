@@ -28,20 +28,47 @@ export default function handler(req: any, res: any) {
     userAgent: req.headers['user-agent']?.substring(0, 50)
   });
 
-  // Return empty tournaments to prevent toFixed errors
+  // Return one simple tournament to test
   if (req.method === 'GET') {
     return res.status(200).json({
       success: true,
       data: {
-        tournaments: [],
+        tournaments: [
+          {
+            id: '1',
+            name: 'Summer Classic Tournament',
+            location: 'Orlando, FL',
+            description: 'Premier summer tournament for youth baseball',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            _count: { 
+              reviews: 1 
+            },
+            reviews: [
+              {
+                id: '1',
+                tournamentId: '1',
+                userId: null,
+                overall_rating: 4.5,
+                coaching_rating: 4.5,
+                value_rating: 4.5,
+                organization_rating: 4.5,
+                playing_time_rating: 4.5,
+                comment: 'Great tournament',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }
+            ]
+          }
+        ],
         pagination: {
           page: 1,
           limit: 20,
-          total: 0,
-          totalPages: 0
+          total: 1,
+          totalPages: 1
         }
       },
-      message: 'No tournaments found - preventing frontend errors'
+      message: 'Tournaments retrieved successfully'
     });
   }
 

@@ -24,6 +24,14 @@
       "dest": "api/register.ts"
     },
     {
+      "src": "/signup(.*)", 
+      "dest": "api/signup.ts"
+    },
+    {
+      "src": "/api/signup(.*)", 
+      "dest": "api/signup.ts"
+    },
+    {
       "src": "/teams(.*)",
       "dest": "api/teams.ts"
     },

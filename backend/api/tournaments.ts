@@ -33,7 +33,12 @@ export default function handler(req: any, res: any) {
             description: 'Premier summer tournament for youth baseball',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            _count: { reviews: 8 }
+            _count: { reviews: 8 },
+            reviews: [
+              { id: '1', overall_rating: 4.5, createdAt: new Date().toISOString() },
+              { id: '2', overall_rating: 5.0, createdAt: new Date().toISOString() },
+              { id: '3', overall_rating: 4.0, createdAt: new Date().toISOString() }
+            ]
           },
           {
             id: '2',
@@ -42,7 +47,12 @@ export default function handler(req: any, res: any) {
             description: 'Competitive fall tournament series',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            _count: { reviews: 12 }
+            _count: { reviews: 12 },
+            reviews: [
+              { id: '4', overall_rating: 4.8, createdAt: new Date().toISOString() },
+              { id: '5', overall_rating: 4.2, createdAt: new Date().toISOString() },
+              { id: '6', overall_rating: 4.6, createdAt: new Date().toISOString() }
+            ]
           }
         ],
         pagination: {

@@ -20,9 +20,9 @@ export default function handler(req: any, res: any) {
     return res.status(200).end();
   }
 
-  // Only handle POST for registration
+  // Only handle POST for signup
   if (req.method === 'POST') {
-    console.log('Registration request received:', {
+    console.log('Signup request received:', {
       method: req.method,
       url: req.url,
       body: req.body,
@@ -31,7 +31,7 @@ export default function handler(req: any, res: any) {
     
     const { email, password, name } = req.body || {};
     
-    console.log('Registration attempt:', { email, name, password: password ? '***' : 'missing' });
+    console.log('Signup attempt:', { email, name, password: password ? '***' : 'missing' });
     
     if (!email || !password || !name) {
       return res.status(400).json({
@@ -40,7 +40,7 @@ export default function handler(req: any, res: any) {
       });
     }
 
-    // Accept any registration
+    // Accept any signup
     return res.status(201).json({
       success: true,
       data: {
@@ -54,13 +54,13 @@ export default function handler(req: any, res: any) {
         },
         token: 'mock-jwt-token-' + Date.now()
       },
-      message: 'Registration successful'
+      message: 'Signup successful'
     });
   }
 
   if (req.method === 'GET') {
     return res.status(200).json({
-      message: 'Register endpoint is working',
+      message: 'Signup endpoint is working',
       method: req.method,
       timestamp: new Date().toISOString()
     });

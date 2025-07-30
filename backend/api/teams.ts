@@ -36,7 +36,11 @@ export default function handler(req: any, res: any) {
             status: 'approved',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            _count: { reviews: 3 }
+            _count: { reviews: 3 },
+            reviews: [
+              { id: '1', overall_rating: 4.2, coaching_rating: 4, value_rating: 4, organization_rating: 5, playing_time_rating: 4, createdAt: new Date().toISOString() },
+              { id: '2', overall_rating: 4.8, coaching_rating: 5, value_rating: 4, organization_rating: 5, playing_time_rating: 5, createdAt: new Date().toISOString() }
+            ]
           },
           {
             id: '2', 
@@ -48,7 +52,11 @@ export default function handler(req: any, res: any) {
             status: 'approved',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            _count: { reviews: 5 }
+            _count: { reviews: 5 },
+            reviews: [
+              { id: '3', overall_rating: 4.6, coaching_rating: 5, value_rating: 4, organization_rating: 4, playing_time_rating: 5, createdAt: new Date().toISOString() },
+              { id: '4', overall_rating: 4.0, coaching_rating: 4, value_rating: 4, organization_rating: 4, playing_time_rating: 4, createdAt: new Date().toISOString() }
+            ]
           }
         ],
         pagination: {

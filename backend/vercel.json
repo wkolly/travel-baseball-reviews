@@ -37,7 +37,7 @@
     },
     {
       "src": "/tournaments(.*)",
-      "dest": "api/debug-tournaments.ts"
+      "dest": "api/tournaments-safe.ts"
     },
     {
       "src": "/reviews(.*)",
@@ -53,7 +53,7 @@
     },
     {
       "src": "/api/tournaments(.*)",
-      "dest": "api/debug-tournaments.ts"
+      "dest": "api/tournaments-safe.ts"
     },
     {
       "src": "/api/reviews(.*)",

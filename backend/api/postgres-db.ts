@@ -47,10 +47,10 @@ export async function initializeDatabase() {
   return;
 }
 
-// Helper function to format team data for actual schema
+// Helper function to format team data for actual schema (camelCase)
 function formatTeam(row: any) {
   // Parse ageGroups if it's a JSON string
-  let ageGroups = row.agegroups || row.ageGroups || '[]';
+  let ageGroups = row.ageGroups || '[]';
   if (typeof ageGroups === 'string') {
     try {
       ageGroups = JSON.parse(ageGroups);
@@ -69,13 +69,13 @@ function formatTeam(row: any) {
     description: row.description || '',
     contact: row.contact || '',
     status: row.status,
-    suggestedBy: row.suggestedby || row.suggestedBy,
-    approvedBy: row.approvedby || row.approvedBy,
-    approvedAt: row.approvedat || row.approvedAt,
-    createdAt: row.createdat || row.createdAt,
-    updatedAt: row.updatedat || row.updatedAt,
+    suggestedBy: row.suggestedBy,
+    approvedBy: row.approvedBy,
+    approvedAt: row.approvedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
     user: {
-      id: row.createdby || row.createdBy || 'system-user',
+      id: row.createdBy || 'system-user',
       name: row.contact || 'Team Contact',
       email: 'contact@example.com'
     },
@@ -89,7 +89,7 @@ export async function getAllTeams() {
   
   try {
     console.log('Executing getAllTeams query...');
-    const result = await pool.query('SELECT * FROM teams ORDER BY createdat DESC');
+    const result = await pool.query('SELECT * FROM teams ORDER BY "createdAt" DESC');
     console.log('Query result:', { rowCount: result.rows.length });
     
     const formattedTeams = result.rows.map(formatTeam);
@@ -124,7 +124,7 @@ export async function getPendingTeams() {
   
   try {
     console.log('Executing getPendingTeams query...');
-    const result = await pool.query('SELECT * FROM teams WHERE status = $1 ORDER BY createdat DESC', ['pending']);
+    const result = await pool.query('SELECT * FROM teams WHERE status = $1 ORDER BY "createdAt" DESC', ['pending']);
     console.log('Pending query result:', { rowCount: result.rows.length });
     
     const formattedTeams = result.rows.map(formatTeam);
@@ -157,7 +157,7 @@ export async function createTeam(teamData: any) {
 
   try {
     await pool.query(`
-      INSERT INTO teams (id, name, location, state, agegroups, description, contact, status, createdby)
+      INSERT INTO teams (id, name, location, state, "ageGroups", description, contact, status, "createdBy")
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
       newTeam.id, newTeam.name, newTeam.location, newTeam.state, newTeam.ageGroups,
@@ -206,7 +206,7 @@ export async function updateTeam(id: string, updates: any) {
     // Update the team using actual schema
     await pool.query(`
       UPDATE teams 
-      SET name = $1, location = $2, state = $3, agegroups = $4, description = $5, status = $6, updatedat = CURRENT_TIMESTAMP
+      SET name = $1, location = $2, state = $3, "ageGroups" = $4, description = $5, status = $6, "updatedAt" = CURRENT_TIMESTAMP
       WHERE id = $7
     `, [
       updates.name || currentTeam.name,

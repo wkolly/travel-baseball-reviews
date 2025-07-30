@@ -20,6 +20,14 @@ export default function handler(req: any, res: any) {
     return res.status(200).end();
   }
 
+  // Log the request for debugging
+  console.log('Tournament request received:', {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    userAgent: req.headers['user-agent']?.substring(0, 50)
+  });
+
   // Always return safe, minimal tournament data
   if (req.method === 'GET') {
     return res.status(200).json({

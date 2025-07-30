@@ -36,6 +36,21 @@ export default async function handler(req: any, res: any) {
   const { url } = req;
   console.log('Admin request received:', { method: req.method, url, timestamp: new Date().toISOString() });
 
+  // Debug endpoint to check database configuration
+  if (url?.includes('/admin/debug-db')) {
+    return res.status(200).json({
+      success: true,
+      data: {
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        databaseUrlLength: process.env.DATABASE_URL?.length || 0,
+        databaseUrlStart: process.env.DATABASE_URL?.substring(0, 20) || 'not set',
+        nodeEnv: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
+      },
+      message: 'Database debug info'
+    });
+  }
+
   // Initialize database on first request
   try {
     await initializeDatabase();
@@ -43,7 +58,8 @@ export default async function handler(req: any, res: any) {
     console.error('Database initialization error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Database connection error'
+      message: 'Database connection error',
+      error: error instanceof Error ? error.message : String(error)
     });
   }
 

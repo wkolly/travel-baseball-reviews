@@ -111,6 +111,7 @@ export default function handler(req: any, res: any) {
 
   if (url?.includes('/admin/teams')) {
     if (req.method === 'GET') {
+      console.log('Admin teams request - returning teams data');
       return res.status(200).json({
         success: true,
         data: {
@@ -191,6 +192,7 @@ export default function handler(req: any, res: any) {
 
   if (url?.includes('/admin/tournaments')) {
     if (req.method === 'GET') {
+      console.log('Admin tournaments request - returning tournaments data');
       return res.status(200).json({
         success: true,
         data: {
@@ -420,6 +422,13 @@ export default function handler(req: any, res: any) {
 
   // Log 404s for debugging
   console.log('Admin 404 - URL not matched:', url, 'Method:', req.method);
+  console.log('Admin 404 - Full request details:', { 
+    url, 
+    method: req.method, 
+    headers: req.headers,
+    query: req.query,
+    body: req.body 
+  });
   
   return res.status(404).json({
     success: false,

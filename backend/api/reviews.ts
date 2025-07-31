@@ -109,7 +109,7 @@ export default async function handler(req: any, res: any) {
       await initializeDatabase();
       
       if (req.method === 'GET') {
-        const tournamentIdMatch = url?.match(/\/tournament-reviews\/([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
+        const tournamentIdMatch = url?.match(/\/tournament-reviews\/(?:tournaments\/)?([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
         const tournamentId = tournamentIdMatch?.[1] || '1';
         
         console.log('Tournament reviews for tournament ID:', tournamentId);
@@ -126,7 +126,7 @@ export default async function handler(req: any, res: any) {
       }
 
       if (req.method === 'POST') {
-        const tournamentIdMatch = url?.match(/\/tournament-reviews\/([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
+        const tournamentIdMatch = url?.match(/\/tournament-reviews\/(?:tournaments\/)?([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
         const tournamentId = tournamentIdMatch?.[1];
         
         if (!tournamentId) {

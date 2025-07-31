@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { MapPin, Trophy, Search, Star } from 'lucide-react';
+import { MapPin, Trophy, Search, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { tournamentsAPI } from '@/services/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -14,6 +14,83 @@ interface Tournament {
   _count: { reviews: number };
   avgRating: number;
 }
+
+const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const hasLongDescription = tournament.description && tournament.description.length > 80;
+  const shortDescription = tournament.description ? tournament.description.substring(0, 80) : '';
+
+  return (
+    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+      <div className="p-3 sm:p-4">
+        {/* Compact Header */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold text-gray-900 leading-tight">
+              <Link 
+                to={`/tournaments/${tournament.id}`}
+                className="hover:text-blue-600 transition-colors"
+              >
+                {tournament.name}
+              </Link>
+            </h3>
+            <div className="flex items-center text-gray-600 text-sm mt-1">
+              <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+              <span className="truncate">{tournament.location}</span>
+            </div>
+          </div>
+          
+          {/* Compact Rating */}
+          <div className="flex items-center ml-2 flex-shrink-0">
+            <Star className={`h-3 w-3 ${tournament.avgRating >= 1 ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} />
+            <span className="text-xs text-gray-600 ml-1">
+              {tournament.avgRating.toFixed(1)}
+            </span>
+          </div>
+        </div>
+
+        {/* Expandable Description */}
+        {tournament.description && (
+          <div className="mb-2">
+            <p className="text-gray-600 text-xs leading-relaxed">
+              {isExpanded ? tournament.description : shortDescription}
+              {hasLongDescription && !isExpanded && '...'}
+            </p>
+            {hasLongDescription && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-600 text-xs hover:text-blue-700 transition-colors flex items-center mt-1"
+              >
+                {isExpanded ? (
+                  <>
+                    Show less <ChevronUp className="h-3 w-3 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    Show more <ChevronDown className="h-3 w-3 ml-1" />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Compact Footer */}
+        <div className="flex items-center justify-between">
+          <div className="text-xs text-gray-500">
+            {tournament._count.reviews} reviews
+          </div>
+          <Link
+            to={`/tournaments/${tournament.id}`}
+            className="px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700 transition-colors"
+          >
+            View
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const TournamentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,70 +181,9 @@ const TournamentsPage: React.FC = () => {
       </div>
 
       {/* Tournament Cards */}
-      <div className="grid gap-6">
+      <div className="grid gap-3 sm:gap-4">
         {tournaments.map((tournament) => (
-          <div key={tournament.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-            <div className="p-4 sm:p-6">
-              {/* Tournament Header */}
-              <div className="mb-4">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                  <Link 
-                    to={`/tournaments/${tournament.id}`}
-                    className="hover:text-blue-600 transition-colors"
-                  >
-                    {tournament.name}
-                  </Link>
-                </h3>
-                
-                <div className="flex items-center text-gray-600 mb-3">
-                  <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                  <span className="text-base">{tournament.location}</span>
-                </div>
-              </div>
-
-              {/* Description */}
-              {tournament.description && (
-                <div className="mb-4">
-                  <p className="text-gray-600 text-sm leading-relaxed">
-                    {tournament.description.length > 150 
-                      ? `${tournament.description.substring(0, 150)}...` 
-                      : tournament.description}
-                  </p>
-                </div>
-              )}
-
-              {/* Rating Section */}
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                          i < Math.floor(tournament.avgRating)
-                            ? 'text-yellow-400 fill-current'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="ml-2 text-sm text-gray-600">
-                    {tournament.avgRating.toFixed(1)} ({tournament._count.reviews} reviews)
-                  </span>
-                </div>
-              </div>
-
-              {/* Button Section */}
-              <div className="pt-2 border-t border-gray-100">
-                <Link
-                  to={`/tournaments/${tournament.id}`}
-                  className="block w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center"
-                >
-                  View Reviews
-                </Link>
-              </div>
-            </div>
-          </div>
+          <TournamentCard key={tournament.id} tournament={tournament} />
         ))}
       </div>
 

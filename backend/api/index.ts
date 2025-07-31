@@ -22,16 +22,16 @@ export default function handler(req: any, res: any) {
 
   const url = req.url || '';
   
-  // Log unhandled requests to help debug
-  if (url !== '/' && url !== '' && !url.includes('favicon')) {
-    console.log('Unhandled request:', {
-      method: req.method,
-      url: url,
-      origin: req.headers.origin
+  // Only handle root API requests, let other files handle their specific routes
+  if (url !== '/' && url !== '' && url !== '/api' && !url.includes('favicon')) {
+    return res.status(404).json({
+      success: false,
+      message: 'Endpoint not found',
+      url: url
     });
   }
 
-  // Simple API response
+  // Simple API response for root only
   return res.status(200).json({
     message: 'Travel Baseball Reviews API',
     status: 'Working!',
@@ -40,7 +40,6 @@ export default function handler(req: any, res: any) {
     url: url,
     frontend_url: process.env.FRONTEND_URL,
     database_configured: !!process.env.DATABASE_URL,
-    note: 'Backend deployed successfully - CORS configured',
-    debug: url !== '/' && url !== '' ? 'This request was not handled by a specific endpoint' : undefined
+    note: 'Backend deployed successfully - CORS configured'
   });
 }

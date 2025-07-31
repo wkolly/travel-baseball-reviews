@@ -84,6 +84,8 @@ function formatTeam(row: any) {
     ageGroups = JSON.stringify(ageGroups);
   }
 
+  const avgRating = row.average_rating ? parseFloat(row.average_rating) : 0;
+
   return {
     id: row.id,
     name: row.name,
@@ -98,6 +100,11 @@ function formatTeam(row: any) {
     approvedAt: row.approvedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    // Add rating properties that frontend expects
+    averageRating: avgRating,
+    avgRating: avgRating,
+    rating: avgRating,
+    overallRating: avgRating,
     user: {
       id: row.createdBy || 'system-user',
       name: row.contact || 'Team Contact',
@@ -112,9 +119,11 @@ export async function getAllTeams() {
   const pool = getPool();
   
   try {
-    console.log('Executing getAllTeams query with review counts...');
+    console.log('Executing getAllTeams query with review counts and average ratings...');
     const result = await pool.query(`
-      SELECT t.*, COUNT(r.id)::text AS review_count
+      SELECT t.*, 
+             COUNT(r.id)::text AS review_count,
+             COALESCE(AVG(r.overall_rating), 0)::text AS average_rating
       FROM teams t
       LEFT JOIN reviews r ON t.id = r."teamId"
       GROUP BY t.id, t.name, t.location, t.state, t."ageGroups", t.description, t.contact, t.status, t."suggestedBy", t."approvedBy", t."approvedAt", t."createdBy", t."createdAt", t."updatedAt"
@@ -123,7 +132,7 @@ export async function getAllTeams() {
     console.log('Query result:', { rowCount: result.rows.length });
     
     const formattedTeams = result.rows.map(formatTeam);
-    console.log('Formatted teams with review counts:', formattedTeams);
+    console.log('Formatted teams with review counts and ratings:', formattedTeams);
     
     return formattedTeams;
   } catch (error) {
@@ -307,9 +316,11 @@ export async function getAllTournaments() {
   const pool = getPool();
   
   try {
-    console.log('Executing getAllTournaments query with review counts...');
+    console.log('Executing getAllTournaments query with review counts and average ratings...');
     const result = await pool.query(`
-      SELECT t.*, COUNT(tr.id)::text AS review_count
+      SELECT t.*, 
+             COUNT(tr.id)::text AS review_count,
+             COALESCE(AVG(tr.overall_rating), 0)::text AS average_rating
       FROM tournaments t
       LEFT JOIN tournament_reviews tr ON t.id = tr."tournamentId"
       GROUP BY t.id, t.name, t.location, t.description, t."createdBy", t."createdAt", t."updatedAt"
@@ -318,7 +329,7 @@ export async function getAllTournaments() {
     console.log('Tournaments query result:', { rowCount: result.rows.length });
     
     const formattedTournaments = result.rows.map(formatTournament);
-    console.log('Formatted tournaments with review counts:', formattedTournaments);
+    console.log('Formatted tournaments with review counts and ratings:', formattedTournaments);
     
     return formattedTournaments;
   } catch (error) {
@@ -394,6 +405,8 @@ export async function createTournament(tournamentData: any) {
 
 // Helper function to format tournament data
 function formatTournament(row: any) {
+  const avgRating = row.average_rating ? parseFloat(row.average_rating) : 0;
+  
   return {
     id: row.id,
     name: row.name,
@@ -401,11 +414,11 @@ function formatTournament(row: any) {
     description: row.description || '',
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    // Add rating properties that frontend expects
-    averageRating: 0,
-    avgRating: 0,
-    rating: 0,
-    overallRating: 0,
+    // Add rating properties that frontend expects - all should be the same value
+    averageRating: avgRating,
+    avgRating: avgRating,
+    rating: avgRating,
+    overallRating: avgRating,
     user: {
       id: row.createdBy || 'system-user',
       name: 'Tournament Creator',

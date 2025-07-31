@@ -46,9 +46,39 @@ export default async function handler(req: any, res: any) {
         
         const team = await getTeamById(teamId);
         if (team) {
+          // Format ageGroups for frontend compatibility
+          const formattedTeam = {
+            ...team,
+            ageGroups: (() => {
+              try {
+                if (!team.ageGroups) return '[]';
+                
+                let ageGroupsStr = team.ageGroups;
+                
+                if (ageGroupsStr.startsWith('[') && ageGroupsStr.endsWith(']')) {
+                  JSON.parse(ageGroupsStr);
+                  return ageGroupsStr;
+                }
+                
+                if (ageGroupsStr.startsWith('"') && ageGroupsStr.endsWith('"')) {
+                  const firstParse = JSON.parse(ageGroupsStr);
+                  if (typeof firstParse === 'string') {
+                    return firstParse;
+                  }
+                  return JSON.stringify(firstParse);
+                }
+                
+                return JSON.stringify([ageGroupsStr]);
+              } catch (e) {
+                console.warn('Failed to parse ageGroups for team', team.id, ':', e.message);
+                return team.ageGroups ? JSON.stringify([String(team.ageGroups)]) : '[]';
+              }
+            })()
+          };
+          
           // Add mock reviews for now
           const teamWithReviews = {
-            ...team,
+            ...formattedTeam,
             reviews: [
               { 
                 id: '1', 
@@ -96,14 +126,48 @@ export default async function handler(req: any, res: any) {
       const allTeams = await getAllTeams();
       const approvedTeams = allTeams.filter(team => team.status === 'approved');
       
+      // Format teams with proper ageGroups handling for frontend
+      const formattedTeams = approvedTeams.map(team => ({
+        ...team,
+        ageGroups: (() => {
+          try {
+            if (!team.ageGroups) return '[]';
+            
+            // Handle different ageGroups formats in database and return as JSON string
+            let ageGroupsStr = team.ageGroups;
+            
+            // If it's already a valid JSON array string, return as-is
+            if (ageGroupsStr.startsWith('[') && ageGroupsStr.endsWith(']')) {
+              JSON.parse(ageGroupsStr); // Validate it's valid JSON
+              return ageGroupsStr;
+            }
+            
+            // If it's double-encoded JSON, parse once and return the inner JSON string
+            if (ageGroupsStr.startsWith('"') && ageGroupsStr.endsWith('"')) {
+              const firstParse = JSON.parse(ageGroupsStr);
+              if (typeof firstParse === 'string') {
+                return firstParse; // Return the inner JSON string
+              }
+              return JSON.stringify(firstParse);
+            }
+            
+            // If it's just a plain string like "12U", wrap it in an array and stringify
+            return JSON.stringify([ageGroupsStr]);
+          } catch (e) {
+            console.warn('Failed to parse ageGroups for team', team.id, ':', e.message);
+            return team.ageGroups ? JSON.stringify([String(team.ageGroups)]) : '[]';
+          }
+        })()
+      }));
+      
       return res.status(200).json({
         success: true,
         data: {
-          teams: approvedTeams,
+          teams: formattedTeams,
           pagination: {
             page: 1,
             limit: 20,
-            total: approvedTeams.length,
+            total: formattedTeams.length,
             totalPages: 1
           }
         },

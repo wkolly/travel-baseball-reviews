@@ -107,60 +107,61 @@ const TournamentsPage: React.FC = () => {
       <div className="grid gap-6">
         {tournaments.map((tournament) => (
           <div key={tournament.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-            <div className="p-6">
-              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                    <Link 
-                      to={`/tournaments/${tournament.id}`}
-                      className="hover:text-blue-600 transition-colors block truncate"
-                    >
-                      {tournament.name}
-                    </Link>
-                  </h3>
-                  
-                  <div className="flex items-center text-gray-600 mb-4">
-                    <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
-                    <span className="text-lg truncate">{tournament.location}</span>
-                  </div>
-
-                  {tournament.description && (
-                    <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-                      {tournament.description.length > 200 
-                        ? `${tournament.description.substring(0, 200)}...` 
-                        : tournament.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center">
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-5 w-5 ${
-                              i < Math.floor(tournament.avgRating)
-                                ? 'text-yellow-400 fill-current'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="ml-2 text-sm text-gray-600 whitespace-nowrap">
-                        {tournament.avgRating.toFixed(1)} ({tournament._count.reviews} reviews)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex-shrink-0 lg:ml-6">
-                  <Link
+            <div className="p-4 sm:p-6">
+              {/* Tournament Header */}
+              <div className="mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+                  <Link 
                     to={`/tournaments/${tournament.id}`}
-                    className="block w-full lg:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center whitespace-nowrap"
+                    className="hover:text-blue-600 transition-colors"
                   >
-                    View Reviews
+                    {tournament.name}
                   </Link>
+                </h3>
+                
+                <div className="flex items-center text-gray-600 mb-3">
+                  <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="text-base">{tournament.location}</span>
                 </div>
+              </div>
+
+              {/* Description */}
+              {tournament.description && (
+                <div className="mb-4">
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {tournament.description.length > 150 
+                      ? `${tournament.description.substring(0, 150)}...` 
+                      : tournament.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Rating and Button Row */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center min-w-0 flex-1">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < Math.floor(tournament.avgRating)
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="ml-2 text-xs sm:text-sm text-gray-600">
+                    {tournament.avgRating.toFixed(1)} ({tournament._count.reviews})
+                  </span>
+                </div>
+
+                <Link
+                  to={`/tournaments/${tournament.id}`}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap flex-shrink-0"
+                >
+                  View Reviews
+                </Link>
               </div>
             </div>
           </div>

@@ -37,7 +37,7 @@
     },
     {
       "src": "/api/admin(.*)",
-      "dest": "api/admin.ts"
+      "dest": "api/admin-simple.ts"
     },
     {
       "src": "/teams(.*)",

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { MapPin, Trophy, Search, Star } from 'lucide-react';
 import { tournamentsAPI } from '@/services/api';
+import { useDebounce } from '@/hooks/useDebounce';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Tournament {
@@ -18,9 +19,21 @@ const TournamentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
 
+  // Debounce search inputs to avoid too many API calls
+  const debouncedSearch = useDebounce(searchTerm, 500);
+  const debouncedLocation = useDebounce(selectedLocation, 500);
+
+  // Build query parameters
+  const query = useMemo(() => {
+    const params: any = {};
+    if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
+    if (debouncedLocation.trim()) params.location = debouncedLocation.trim();
+    return params;
+  }, [debouncedSearch, debouncedLocation]);
+
   const { data: tournamentsData, isLoading, error } = useQuery(
-    ['tournaments', searchTerm],
-    () => tournamentsAPI.getTournaments({ search: searchTerm }),
+    ['tournaments', query],
+    () => tournamentsAPI.getTournaments(query),
     {
       keepPreviousData: true,
       staleTime: 30000,
@@ -31,11 +44,6 @@ const TournamentsPage: React.FC = () => {
   if (error) return <div>Error loading tournaments</div>;
 
   const tournaments: Tournament[] = tournamentsData?.data?.tournaments || [];
-
-  const filteredTournaments = tournaments.filter(tournament => {
-    const matchesLocation = !selectedLocation || tournament.location.toLowerCase().includes(selectedLocation.toLowerCase());
-    return matchesLocation;
-  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -56,30 +64,48 @@ const TournamentsPage: React.FC = () => {
               placeholder="Search tournaments..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                isLoading && searchTerm !== debouncedSearch ? 'bg-gray-50' : ''
+              }`}
             />
+            {isLoading && searchTerm !== debouncedSearch && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              </div>
+            )}
           </div>
 
-          <input
-            type="text"
-            placeholder="Location (city, state)"
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder="Location (city, state)"
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                isLoading && selectedLocation !== debouncedLocation ? 'bg-gray-50' : ''
+              }`}
+            />
+            {isLoading && selectedLocation !== debouncedLocation && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Results */}
       <div className="mb-6">
         <p className="text-gray-600">
-          Showing {filteredTournaments.length} tournament{filteredTournaments.length !== 1 ? 's' : ''}
+          Showing {tournaments.length} tournament{tournaments.length !== 1 ? 's' : ''}
+          {(debouncedSearch || debouncedLocation) && ' (filtered)'}
         </p>
       </div>
 
       {/* Tournament Cards */}
       <div className="grid gap-6">
-        {filteredTournaments.map((tournament) => (
+        {tournaments.map((tournament) => (
           <div key={tournament.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
             <div className="p-6">
               <div className="flex justify-between items-start">
@@ -137,11 +163,26 @@ const TournamentsPage: React.FC = () => {
         ))}
       </div>
 
-      {filteredTournaments.length === 0 && (
+      {tournaments.length === 0 && (
         <div className="text-center py-12">
           <Trophy className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No tournaments found</h3>
-          <p className="text-gray-600">Try adjusting your search criteria or check back later for new tournaments.</p>
+          <p className="text-gray-600">
+            {(debouncedSearch || debouncedLocation) 
+              ? 'Try adjusting your search criteria to find more tournaments.'
+              : 'Check back later for new tournaments.'}
+          </p>
+          {(debouncedSearch || debouncedLocation) && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedLocation('');
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       )}
     </div>

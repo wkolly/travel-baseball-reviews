@@ -54,8 +54,31 @@ export default async function handler(req: any, res: any) {
         });
       }
       
-      // Return list of all tournaments
-      const allTournaments = await getAllTournaments();
+      // Parse query parameters for filtering
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const searchQuery = urlObj.searchParams.get('search') || '';
+      const locationQuery = urlObj.searchParams.get('location') || '';
+      
+      console.log('Tournament query parameters:', { search: searchQuery, location: locationQuery });
+      
+      // Get all tournaments
+      let allTournaments = await getAllTournaments();
+      
+      // Apply search filtering
+      if (searchQuery) {
+        allTournaments = allTournaments.filter(tournament => 
+          tournament.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          tournament.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (tournament.description && tournament.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+      }
+      
+      // Apply location filtering
+      if (locationQuery) {
+        allTournaments = allTournaments.filter(tournament => 
+          tournament.location.toLowerCase().includes(locationQuery.toLowerCase())
+        );
+      }
       
       return res.status(200).json({
         success: true,

@@ -22,12 +22,14 @@ interface TeamFiltersProps {
   };
   onFilterChange: (key: string, value: string) => void;
   onClearFilters: () => void;
+  isSearching?: boolean;
 }
 
 const TeamFilters: React.FC<TeamFiltersProps> = ({
   filters,
   onFilterChange,
   onClearFilters,
+  isSearching = false,
 }) => {
   const hasActiveFilters = Object.values(filters).some(value => value !== '');
 
@@ -45,13 +47,20 @@ const TeamFilters: React.FC<TeamFiltersProps> = ({
               <Search className="h-4 w-4 inline mr-1" />
               Search Teams
             </label>
-            <input
-              type="text"
-              placeholder="Team name or location..."
-              className="form-input"
-              value={filters.search}
-              onChange={(e) => onFilterChange('search', e.target.value)}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Team name or location..."
+                className={`form-input transition-all ${isSearching ? 'bg-gray-50' : ''}`}
+                value={filters.search}
+                onChange={(e) => onFilterChange('search', e.target.value)}
+              />
+              {isSearching && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* State */}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeams } from '@/hooks/useTeams';
+import { useDebounce } from '@/hooks/useDebounce';
 import TeamCard from '@/components/TeamCard';
 import TeamFilters from '@/components/TeamFilters';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -17,15 +18,18 @@ const TeamsPage: React.FC = () => {
     minRating: '',
   });
 
-  // Debounced query to avoid too many API calls
+  // Debounce search input to avoid too many API calls (500ms delay)
+  const debouncedSearch = useDebounce(filters.search, 500);
+  
+  // Build query parameters with debounced search
   const query = useMemo(() => {
     const params: any = {};
-    if (filters.search.trim()) params.search = filters.search.trim();
+    if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
     if (filters.state) params.state = filters.state;
     if (filters.ageGroup) params.ageGroup = filters.ageGroup;
     if (filters.minRating) params.minRating = parseFloat(filters.minRating);
     return params;
-  }, [filters]);
+  }, [debouncedSearch, filters.state, filters.ageGroup, filters.minRating]);
 
   const { data, isLoading, error } = useTeams(query);
 
@@ -73,6 +77,7 @@ const TeamsPage: React.FC = () => {
         filters={filters}
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
+        isSearching={isLoading && filters.search !== debouncedSearch}
       />
 
       {/* Loading State */}

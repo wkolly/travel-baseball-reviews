@@ -1,4 +1,13 @@
 import { createUser, getUserByEmail, initializeDatabase } from './postgres-db';
+import { Pool } from 'pg';
+
+// Get database connection pool
+function getPool() {
+  return new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+}
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
@@ -81,11 +90,14 @@ export default async function handler(req: any, res: any) {
         
         // In production, you would verify the password hash here
         // For now, we'll accept any password for existing users
+        // Create a simple token that includes user ID for profile lookup
+        const token = 'mock-jwt-token-' + user.id + '-' + Date.now();
+        
         return res.status(200).json({
           success: true,
           data: {
             user: user,
-            token: 'mock-jwt-token-' + Date.now()
+            token: token
           },
           message: 'Login successful'
         });
@@ -94,18 +106,21 @@ export default async function handler(req: any, res: any) {
         
         // Fallback to accepting any login if database fails
         const isAdmin = email === 'admin@travelballhub.com';
+        const userId = isAdmin ? 'admin-user' : 'user-123';
+        const token = 'mock-jwt-token-' + userId + '-' + Date.now();
+        
         return res.status(200).json({
           success: true,
           data: {
             user: {
-              id: isAdmin ? 'admin-user' : 'user-123',
+              id: userId,
               email: email,
               name: isAdmin ? 'Admin' : email.split('@')[0],
               role: isAdmin ? 'ADMIN' : 'USER',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             },
-            token: 'mock-jwt-token-' + Date.now()
+            token: token
           },
           message: 'Login successful (fallback mode)'
         });
@@ -164,11 +179,13 @@ export default async function handler(req: any, res: any) {
         // Create new user in database
         const newUser = await createUser({ email, password, name });
         
+        const token = 'mock-jwt-token-' + newUser.id + '-' + Date.now();
+        
         return res.status(201).json({
           success: true,
           data: {
             user: newUser,
-            token: 'mock-jwt-token-' + Date.now()
+            token: token
           },
           message: 'Registration successful'
         });
@@ -176,18 +193,21 @@ export default async function handler(req: any, res: any) {
         console.error('Database registration error:', error);
         
         // Fallback to mock registration if database fails
+        const userId = 'user-' + Date.now();
+        const token = 'mock-jwt-token-' + userId + '-' + Date.now();
+        
         return res.status(201).json({
           success: true,
           data: {
             user: {
-              id: 'user-' + Date.now(),
+              id: userId,
               email: email,
               name: name,
               role: 'USER',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             },
-            token: 'mock-jwt-token-' + Date.now()
+            token: token
           },
           message: 'Registration successful (fallback mode)'
         });
@@ -206,20 +226,73 @@ export default async function handler(req: any, res: any) {
   // Handle profile requests
   if (url?.includes('/auth/profile') || url?.includes('/profile')) {
     if (req.method === 'GET') {
-      // Mock profile response for admin users
       const authHeader = req.headers.authorization;
       const token = authHeader?.replace('Bearer ', '');
       
-      // Simple token check - in production you'd validate the JWT
+      // Simple token check - in production you'd validate the JWT properly
       if (token && token.includes('mock-jwt-token')) {
+        // For admin token, return admin user
+        if (token === 'mock-jwt-token') {
+          return res.status(200).json({
+            success: true,
+            data: {
+              user: {
+                id: 'admin-user',
+                email: 'admin@travelballhub.com',
+                name: 'Admin',
+                role: 'ADMIN',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              }
+            },
+            message: 'Profile retrieved successfully'
+          });
+        }
+        
+        // For other tokens, extract user ID and get user from database
+        try {
+          // Extract user ID from token format: mock-jwt-token-{userId}-{timestamp}
+          const tokenParts = token.split('-');
+          if (tokenParts.length >= 4) {
+            // Remove 'mock', 'jwt', 'token' parts and timestamp, get user ID
+            const userId = tokenParts.slice(3, -1).join('-'); // Handle user IDs that might have hyphens
+            
+            console.log('Looking up user profile for ID:', userId);
+            
+            const pool = getPool();
+            const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+            
+            if (result.rows.length > 0) {
+              const user = result.rows[0];
+              return res.status(200).json({
+                success: true,
+                data: {
+                  user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    createdAt: user.createdAt,
+                    updatedAt: user.updatedAt
+                  }
+                },
+                message: 'Profile retrieved successfully'
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+        
+        // Fallback: return a generic user profile
         return res.status(200).json({
           success: true,
           data: {
             user: {
-              id: 'admin-user',
-              email: 'admin@travelballhub.com',
-              name: 'Admin',
-              role: 'ADMIN',
+              id: 'user-' + Date.now(),
+              email: 'user@example.com',
+              name: 'User',
+              role: 'USER',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             }

@@ -96,6 +96,10 @@
       "dest": "api/debug-teams.ts"
     },
     {
+      "src": "/api/debug-schema(.*)",
+      "dest": "api/debug-schema.ts"
+    },
+    {
       "src": "/(.*)",
       "dest": "api/index.ts"
     }

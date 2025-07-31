@@ -108,24 +108,28 @@ const TournamentsPage: React.FC = () => {
         {tournaments.map((tournament) => (
           <div key={tournament.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
             <div className="p-6">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
+              <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                <div className="flex-1 min-w-0">
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">
                     <Link 
                       to={`/tournaments/${tournament.id}`}
-                      className="hover:text-blue-600 transition-colors"
+                      className="hover:text-blue-600 transition-colors block truncate"
                     >
                       {tournament.name}
                     </Link>
                   </h3>
                   
                   <div className="flex items-center text-gray-600 mb-4">
-                    <MapPin className="h-5 w-5 mr-2" />
-                    <span className="text-lg">{tournament.location}</span>
+                    <MapPin className="h-5 w-5 mr-2 flex-shrink-0" />
+                    <span className="text-lg truncate">{tournament.location}</span>
                   </div>
 
                   {tournament.description && (
-                    <p className="text-gray-600 mb-4 line-clamp-2">{tournament.description}</p>
+                    <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                      {tournament.description.length > 200 
+                        ? `${tournament.description.substring(0, 200)}...` 
+                        : tournament.description}
+                    </p>
                   )}
 
                   <div className="flex items-center space-x-4">
@@ -142,17 +146,17 @@ const TournamentsPage: React.FC = () => {
                           />
                         ))}
                       </div>
-                      <span className="ml-2 text-sm text-gray-600">
+                      <span className="ml-2 text-sm text-gray-600 whitespace-nowrap">
                         {tournament.avgRating.toFixed(1)} ({tournament._count.reviews} reviews)
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="ml-6">
+                <div className="flex-shrink-0 lg:ml-6">
                   <Link
                     to={`/tournaments/${tournament.id}`}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                    className="block w-full lg:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center whitespace-nowrap"
                   >
                     View Reviews
                   </Link>

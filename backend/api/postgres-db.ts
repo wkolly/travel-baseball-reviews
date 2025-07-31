@@ -392,12 +392,19 @@ function formatTournament(row: any) {
     description: row.description || '',
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    // Add rating properties that frontend expects
+    averageRating: 0,
+    avgRating: 0,
+    rating: 0,
+    overallRating: 0,
     user: {
       id: row.createdBy || 'system-user',
       name: 'Tournament Creator',
       email: 'creator@example.com'
     },
-    _count: { reviews: 0 }
+    _count: { reviews: 0 },
+    // Add empty reviews array for compatibility
+    reviews: []
   };
 }
 

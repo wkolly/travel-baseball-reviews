@@ -41,9 +41,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Validate token by fetching profile
           try {
             const response = await authAPI.getProfile();
-            if (response.success && response.data) {
-              setUser(response.data);
-              localStorage.setItem('user', JSON.stringify(response.data));
+            if (response.success && response.data && response.data.user) {
+              setUser(response.data.user);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+            } else {
+              // Invalid response structure, clear auth state
+              logout();
             }
           } catch (error) {
             // Token is invalid, clear auth state

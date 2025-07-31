@@ -73,7 +73,7 @@ export default async function handler(req: any, res: any) {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
               },
-              token: 'mock-jwt-token-' + Date.now()
+              token: 'mock-jwt-token-admin-user-' + Date.now()
             },
             message: 'Admin login successful'
           });
@@ -231,8 +231,8 @@ export default async function handler(req: any, res: any) {
       
       // Simple token check - in production you'd validate the JWT properly
       if (token && token.includes('mock-jwt-token')) {
-        // For admin token, return admin user
-        if (token === 'mock-jwt-token') {
+        // For admin token, return admin user (handle both legacy and new format)
+        if (token === 'mock-jwt-token' || token.includes('mock-jwt-token-admin-user')) {
           return res.status(200).json({
             success: true,
             data: {
@@ -253,11 +253,22 @@ export default async function handler(req: any, res: any) {
         try {
           // Extract user ID from token format: mock-jwt-token-{userId}-{timestamp}
           const tokenParts = token.split('-');
-          if (tokenParts.length >= 4) {
+          console.log('Token parts:', tokenParts, 'Length:', tokenParts.length);
+          
+          if (tokenParts.length >= 4 && tokenParts[0] === 'mock' && tokenParts[1] === 'jwt' && tokenParts[2] === 'token') {
             // Remove 'mock', 'jwt', 'token' parts and timestamp, get user ID
             const userId = tokenParts.slice(3, -1).join('-'); // Handle user IDs that might have hyphens
             
             console.log('Looking up user profile for ID:', userId);
+            
+            // Skip lookup if userId is empty or invalid
+            if (!userId || userId.trim() === '') {
+              console.log('Invalid user ID extracted from token');
+              return res.status(401).json({
+                success: false,
+                message: 'Unauthorized - invalid token format'
+              });
+            }
             
             const pool = getPool();
             const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
@@ -278,26 +289,21 @@ export default async function handler(req: any, res: any) {
                 },
                 message: 'Profile retrieved successfully'
               });
+            } else {
+              console.log('No user found for ID:', userId);
             }
+          } else {
+            console.log('Token does not match expected format');
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
         }
         
-        // Fallback: return a generic user profile
-        return res.status(200).json({
-          success: true,
-          data: {
-            user: {
-              id: 'user-' + Date.now(),
-              email: 'user@example.com',
-              name: 'User',
-              role: 'USER',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            }
-          },
-          message: 'Profile retrieved successfully'
+        // No fallback - return unauthorized if user not found
+        console.log('User not found for token, returning unauthorized');
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized - user not found'
         });
       } else {
         return res.status(401).json({

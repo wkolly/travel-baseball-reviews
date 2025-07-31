@@ -271,7 +271,35 @@ export default async function handler(req: any, res: any) {
           name: team.name || 'Unknown Team',
           location: team.location || '',
           state: team.state || '',
-          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : (team.ageGroups ? JSON.parse(team.ageGroups) : []),
+          ageGroups: (() => {
+            try {
+              if (Array.isArray(team.ageGroups)) return team.ageGroups;
+              if (!team.ageGroups) return [];
+              
+              // Handle different ageGroups formats in database
+              let ageGroupsStr = team.ageGroups;
+              
+              // If it's already a valid JSON array string, parse it
+              if (ageGroupsStr.startsWith('[') && ageGroupsStr.endsWith(']')) {
+                return JSON.parse(ageGroupsStr);
+              }
+              
+              // If it's double-encoded JSON, parse twice
+              if (ageGroupsStr.startsWith('"') && ageGroupsStr.endsWith('"')) {
+                const firstParse = JSON.parse(ageGroupsStr);
+                if (typeof firstParse === 'string') {
+                  return JSON.parse(firstParse);
+                }
+                return firstParse;
+              }
+              
+              // If it's just a plain string like "12U", wrap it in an array
+              return [ageGroupsStr];
+            } catch (e) {
+              console.warn('Failed to parse ageGroups for team', team.id, ':', e.message);
+              return team.ageGroups ? [String(team.ageGroups)] : [];
+            }
+          })(),
           description: team.description || '',
           status: team.status || 'pending',
           createdAt: team.createdAt || new Date().toISOString(),
@@ -632,7 +660,35 @@ export default async function handler(req: any, res: any) {
           name: team.name || 'Unknown Team',
           location: team.location || '',
           state: team.state || '',
-          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : (team.ageGroups ? JSON.parse(team.ageGroups) : []),
+          ageGroups: (() => {
+            try {
+              if (Array.isArray(team.ageGroups)) return team.ageGroups;
+              if (!team.ageGroups) return [];
+              
+              // Handle different ageGroups formats in database
+              let ageGroupsStr = team.ageGroups;
+              
+              // If it's already a valid JSON array string, parse it
+              if (ageGroupsStr.startsWith('[') && ageGroupsStr.endsWith(']')) {
+                return JSON.parse(ageGroupsStr);
+              }
+              
+              // If it's double-encoded JSON, parse twice
+              if (ageGroupsStr.startsWith('"') && ageGroupsStr.endsWith('"')) {
+                const firstParse = JSON.parse(ageGroupsStr);
+                if (typeof firstParse === 'string') {
+                  return JSON.parse(firstParse);
+                }
+                return firstParse;
+              }
+              
+              // If it's just a plain string like "12U", wrap it in an array
+              return [ageGroupsStr];
+            } catch (e) {
+              console.warn('Failed to parse ageGroups for team', team.id, ':', e.message);
+              return team.ageGroups ? [String(team.ageGroups)] : [];
+            }
+          })(),
           description: team.description || '',
           status: team.status || 'pending',
           createdAt: team.createdAt || new Date().toISOString(),

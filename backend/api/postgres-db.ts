@@ -496,3 +496,106 @@ function formatUser(row: any) {
     updatedAt: row.updatedAt
   };
 }
+
+// Review operations
+export async function createTeamReview(reviewData: any) {
+  const pool = getPool();
+  
+  const newReview = {
+    id: 'review-' + Date.now(),
+    teamId: reviewData.teamId,
+    userId: reviewData.userId || null, // Can be null for anonymous reviews
+    coaching_rating: parseInt(reviewData.coaching_rating) || 1,
+    value_rating: parseInt(reviewData.value_rating) || 1,
+    organization_rating: parseInt(reviewData.organization_rating) || 1,
+    playing_time_rating: parseInt(reviewData.playing_time_rating) || 1,
+    overall_rating: parseFloat(reviewData.overall_rating) || 1.0,
+    comment: reviewData.comment || null
+  };
+
+  try {
+    await pool.query(`
+      INSERT INTO reviews (id, "teamId", "userId", coaching_rating, value_rating, organization_rating, playing_time_rating, overall_rating, comment, "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `, [
+      newReview.id, newReview.teamId, newReview.userId, newReview.coaching_rating,
+      newReview.value_rating, newReview.organization_rating, newReview.playing_time_rating,
+      newReview.overall_rating, newReview.comment, new Date(), new Date()
+    ]);
+
+    // Fetch the created review to get timestamps
+    const result = await pool.query('SELECT * FROM reviews WHERE id = $1', [newReview.id]);
+    if (result.rows.length > 0) {
+      return formatReview(result.rows[0]);
+    }
+
+    // Fallback if fetch fails
+    return {
+      ...newReview,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error creating review:', error);
+    throw error;
+  }
+}
+
+export async function getReviewsByTeamId(teamId: string) {
+  const pool = getPool();
+  
+  try {
+    console.log('Fetching reviews for team:', teamId);
+    const result = await pool.query('SELECT * FROM reviews WHERE "teamId" = $1 ORDER BY "createdAt" DESC', [teamId]);
+    console.log('Reviews query result:', { rowCount: result.rows.length });
+    
+    const formattedReviews = result.rows.map(formatReview);
+    console.log('Formatted reviews:', formattedReviews);
+    
+    return formattedReviews;
+  } catch (error) {
+    console.error('Error getting reviews by team id:', error);
+    return [];
+  }
+}
+
+export async function getAllReviews() {
+  const pool = getPool();
+  
+  try {
+    console.log('Executing getAllReviews query...');
+    const result = await pool.query('SELECT * FROM reviews ORDER BY "createdAt" DESC');
+    console.log('All reviews query result:', { rowCount: result.rows.length });
+    
+    const formattedReviews = result.rows.map(formatReview);
+    console.log('Formatted reviews:', formattedReviews);
+    
+    return formattedReviews;
+  } catch (error) {
+    console.error('Error getting all reviews:', error);
+    return [];
+  }
+}
+
+// Helper function to format review data
+function formatReview(row: any) {
+  return {
+    id: row.id,
+    teamId: row.teamId,
+    userId: row.userId,
+    coaching_rating: row.coaching_rating,
+    value_rating: row.value_rating,
+    organization_rating: row.organization_rating,
+    playing_time_rating: row.playing_time_rating,
+    overall_rating: row.overall_rating,
+    comment: row.comment,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    // Add user info if userId exists (will need to join with users table later)
+    user: row.userId ? {
+      id: row.userId,
+      name: 'User', // TODO: Join with users table to get actual name
+      email: 'user@example.com'
+    } : null
+  };
+}

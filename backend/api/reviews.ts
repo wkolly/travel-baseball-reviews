@@ -1,4 +1,6 @@
-export default function handler(req: any, res: any) {
+import { createTeamReview, getReviewsByTeamId, getAllReviews, initializeDatabase } from './postgres-db';
+
+export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
     'https://travelbaseballreview.com',
@@ -25,78 +27,78 @@ export default function handler(req: any, res: any) {
 
   // Handle team reviews
   if (url?.includes('/team-reviews') || url?.includes('/reviews/teams')) {
-    if (req.method === 'GET') {
-      const teamIdMatch = url?.match(/\/team-reviews\/([^\/\?]+)/) || url?.match(/team-reviews\?.*teamId=([^&]+)/) || url?.match(/\/reviews\/teams\/([^\/\?]+)/);
-      const teamId = teamIdMatch?.[1] || '1';
+    try {
+      // Initialize database
+      await initializeDatabase();
       
-      console.log('Team reviews for team ID:', teamId);
-      
-      return res.status(200).json({
-        success: true,
-        data: {
-          reviews: [
-            { 
-              id: '1', 
-              teamId: teamId,
-              userId: null,
-              overall_rating: 4.2, 
-              coaching_rating: 4, 
-              value_rating: 4, 
-              organization_rating: 5, 
-              playing_time_rating: 4, 
-              comment: 'Great coaching staff and well organized team.',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            },
-            { 
-              id: '2', 
-              teamId: teamId,
-              userId: null,
-              overall_rating: 4.8, 
-              coaching_rating: 5, 
-              value_rating: 4, 
-              organization_rating: 5, 
-              playing_time_rating: 5,
-              comment: 'Excellent team with great player development.',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            },
-            { 
-              id: '3', 
-              teamId: teamId,
-              userId: null,
-              overall_rating: 4.0, 
-              coaching_rating: 4, 
-              value_rating: 4, 
-              organization_rating: 4, 
-              playing_time_rating: 4,
-              comment: 'Solid team with good opportunities for kids.',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            }
-          ]
-        },
-        message: 'Team reviews retrieved successfully'
+      if (req.method === 'GET') {
+        const teamIdMatch = url?.match(/\/team-reviews\/([^\/\?]+)/) || url?.match(/team-reviews\?.*teamId=([^&]+)/) || url?.match(/\/reviews\/teams\/([^\/\?]+)/);
+        const teamId = teamIdMatch?.[1] || '1';
+        
+        console.log('Team reviews for team ID:', teamId);
+        
+        const reviews = await getReviewsByTeamId(teamId);
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            reviews: reviews
+          },
+          message: 'Team reviews retrieved successfully'
+        });
+      }
+    } catch (error) {
+      console.error('Error handling team reviews GET:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error retrieving team reviews',
+        error: error instanceof Error ? error.message : String(error)
       });
     }
 
     if (req.method === 'POST') {
-      const { coaching_rating, value_rating, organization_rating, playing_time_rating, overall_rating, comment } = req.body || {};
-      
-      return res.status(201).json({
-        success: true,
-        data: {
-          id: 'new-review-' + Date.now(),
-          coaching_rating: coaching_rating || 5,
-          value_rating: value_rating || 5,
-          organization_rating: organization_rating || 5,
-          playing_time_rating: playing_time_rating || 5,
-          overall_rating: overall_rating || 5,
-          comment: comment || '',
-          createdAt: new Date().toISOString()
-        },
-        message: 'Team review created successfully'
-      });
+      try {
+        // Initialize database
+        await initializeDatabase();
+        
+        const teamIdMatch = url?.match(/\/team-reviews\/([^\/\?]+)/) || url?.match(/team-reviews\?.*teamId=([^&]+)/) || url?.match(/\/reviews\/teams\/([^\/\?]+)/);
+        const teamId = teamIdMatch?.[1];
+        
+        if (!teamId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Team ID is required'
+          });
+        }
+        
+        const reviewData = {
+          teamId: teamId,
+          userId: req.body?.userId || null, // Can be null for anonymous reviews
+          coaching_rating: req.body?.coaching_rating,
+          value_rating: req.body?.value_rating,
+          organization_rating: req.body?.organization_rating,
+          playing_time_rating: req.body?.playing_time_rating,
+          overall_rating: req.body?.overall_rating,
+          comment: req.body?.comment
+        };
+        
+        console.log('Creating team review:', reviewData);
+        
+        const newReview = await createTeamReview(reviewData);
+        
+        return res.status(201).json({
+          success: true,
+          data: newReview,
+          message: 'Team review created successfully'
+        });
+      } catch (error) {
+        console.error('Error creating team review:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error creating team review',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 

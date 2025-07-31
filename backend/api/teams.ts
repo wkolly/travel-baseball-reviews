@@ -1,4 +1,4 @@
-import { getAllTeams, getTeamById, getPendingTeams, createTeam, initializeDatabase } from './postgres-db';
+import { getAllTeams, getTeamById, getPendingTeams, createTeam, getReviewsByTeamId, initializeDatabase } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
@@ -76,37 +76,11 @@ export default async function handler(req: any, res: any) {
             })()
           };
           
-          // Add mock reviews for now
+          // Get real reviews from database
+          const reviews = await getReviewsByTeamId(teamId);
           const teamWithReviews = {
             ...formattedTeam,
-            reviews: [
-              { 
-                id: '1', 
-                teamId: teamId,
-                userId: null,
-                overall_rating: 4.2, 
-                coaching_rating: 4, 
-                value_rating: 4, 
-                organization_rating: 5, 
-                playing_time_rating: 4, 
-                comment: 'Great coaching staff and well organized team.',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              },
-              { 
-                id: '2', 
-                teamId: teamId,
-                userId: null,
-                overall_rating: 4.8, 
-                coaching_rating: 5, 
-                value_rating: 4, 
-                organization_rating: 5, 
-                playing_time_rating: 5,
-                comment: 'Excellent team with great player development.',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              }
-            ]
+            reviews: reviews
           };
           
           return res.status(200).json({

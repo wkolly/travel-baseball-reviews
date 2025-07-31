@@ -63,12 +63,12 @@ export const authAPI = {
   },
   
   getProfile: async (): Promise<ApiResponse> => {
-    const response = await api.get('/auth/profile');
+    const response = await api.get('/api/auth/profile');
     return response.data;
   },
 
   updateProfile: async (data: { name?: string; currentPassword?: string; newPassword?: string }): Promise<ApiResponse> => {
-    const response = await api.put('/auth/profile', data);
+    const response = await api.put('/api/auth/profile', data);
     return response.data;
   }
 };
@@ -86,17 +86,17 @@ export const teamsAPI = {
   },
   
   createTeam: async (data: CreateTeamRequest): Promise<ApiResponse<Team>> => {
-    const response = await api.post('/teams', data);
+    const response = await api.post('/api/teams', data);
     return response.data;
   },
   
   updateTeam: async (id: string, data: Partial<CreateTeamRequest>): Promise<ApiResponse<Team>> => {
-    const response = await api.put(`/teams/${id}`, data);
+    const response = await api.put(`/api/teams/${id}`, data);
     return response.data;
   },
   
   deleteTeam: async (id: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/teams/${id}`);
+    const response = await api.delete(`/api/teams/${id}`);
     return response.data;
   }
 };
@@ -104,24 +104,24 @@ export const teamsAPI = {
 // Reviews API
 export const reviewsAPI = {
   getTeamReviews: async (teamId: string, page = 1, limit = 10): Promise<ApiResponse> => {
-    const response = await api.get(`/reviews/teams/${teamId}`, {
+    const response = await api.get(`/api/reviews/teams/${teamId}`, {
       params: { page, limit }
     });
     return response.data;
   },
   
   createReview: async (teamId: string, data: CreateReviewRequest): Promise<ApiResponse<Review>> => {
-    const response = await api.post(`/reviews/teams/${teamId}`, data);
+    const response = await api.post(`/api/reviews/teams/${teamId}`, data);
     return response.data;
   },
   
   updateReview: async (teamId: string, reviewId: string, data: CreateReviewRequest): Promise<ApiResponse<Review>> => {
-    const response = await api.put(`/reviews/teams/${teamId}/${reviewId}`, data);
+    const response = await api.put(`/api/reviews/teams/${teamId}/${reviewId}`, data);
     return response.data;
   },
   
   deleteReview: async (reviewId: string): Promise<ApiResponse> => {
-    const response = await api.delete(`/reviews/${reviewId}`);
+    const response = await api.delete(`/api/reviews/${reviewId}`);
     return response.data;
   }
 };
@@ -139,7 +139,7 @@ export const tournamentsAPI = {
   },
   
   createTournament: async (data: CreateTournamentRequest): Promise<ApiResponse<Tournament>> => {
-    const response = await api.post('/tournaments', data);
+    const response = await api.post('/api/tournaments', data);
     return response.data;
   }
 };
@@ -147,14 +147,14 @@ export const tournamentsAPI = {
 // Tournament Reviews API
 export const tournamentReviewsAPI = {
   getTournamentReviews: async (tournamentId: string, page = 1, limit = 10): Promise<ApiResponse> => {
-    const response = await api.get(`/tournament-reviews/tournaments/${tournamentId}`, {
+    const response = await api.get(`/api/tournament-reviews/tournaments/${tournamentId}`, {
       params: { page, limit }
     });
     return response.data;
   },
   
   createTournamentReview: async (tournamentId: string, data: CreateTournamentReviewRequest): Promise<ApiResponse<TournamentReview>> => {
-    const response = await api.post(`/tournament-reviews/tournaments/${tournamentId}`, data);
+    const response = await api.post(`/api/tournament-reviews/tournaments/${tournamentId}`, data);
     return response.data;
   }
 };
@@ -237,19 +237,19 @@ export const adminAPI = {
 // Chat API
 export const chatAPI = {
   getRooms: async (): Promise<ApiResponse<ChatRoom[]>> => {
-    const response = await api.get('/chat/rooms');
+    const response = await api.get('/api/chat/rooms');
     return response.data;
   },
   
   getRoomMessages: async (roomId: string, page = 1, limit = 50): Promise<ApiResponse> => {
-    const response = await api.get(`/chat/rooms/${roomId}/messages`, {
+    const response = await api.get(`/api/chat/rooms/${roomId}/messages`, {
       params: { page, limit }
     });
     return response.data;
   },
   
   sendMessage: async (roomId: string, data: CreateMessageRequest): Promise<ApiResponse<ChatMessage>> => {
-    const response = await api.post(`/chat/rooms/${roomId}/messages`, data);
+    const response = await api.post(`/api/chat/rooms/${roomId}/messages`, data);
     return response.data;
   }
 };

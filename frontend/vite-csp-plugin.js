@@ -6,7 +6,7 @@ export function cspPlugin() {
       enforce: 'post',
       transform(html) {
         // Ensure CSP meta tag is present
-        const cspMetaTag = `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.travelbaseballreview.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;" />`;
+        const cspMetaTag = `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.travelbaseballreview.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com;" />`;
         
         // Check if CSP meta tag already exists
         if (!html.includes('Content-Security-Policy')) {

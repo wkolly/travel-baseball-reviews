@@ -42,25 +42,73 @@ export default function handler(req: any, res: any) {
         });
       }
 
-      // Check if admin user
-      const isAdmin = email === 'admin@travelballhub.com';
-      
-      // Accept any login
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: {
-            id: isAdmin ? 'admin-user' : 'user-123',
-            email: email,
-            name: isAdmin ? 'Admin' : email.split('@')[0],
-            role: isAdmin ? 'ADMIN' : 'USER',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+      // Try to authenticate with database
+      try {
+        const { getUserByEmail, initializeDatabase } = await import('./postgres-db');
+        await initializeDatabase();
+        
+        // Check if admin user
+        const isAdmin = email === 'admin@travelballhub.com';
+        
+        if (isAdmin) {
+          // Allow admin login without database check
+          return res.status(200).json({
+            success: true,
+            data: {
+              user: {
+                id: 'admin-user',
+                email: email,
+                name: 'Admin',
+                role: 'ADMIN',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              },
+              token: 'mock-jwt-token-' + Date.now()
+            },
+            message: 'Admin login successful'
+          });
+        }
+        
+        // Check if user exists in database
+        const user = await getUserByEmail(email);
+        if (!user) {
+          return res.status(401).json({
+            success: false,
+            message: 'Invalid email or password'
+          });
+        }
+        
+        // In production, you would verify the password hash here
+        // For now, we'll accept any password for existing users
+        return res.status(200).json({
+          success: true,
+          data: {
+            user: user,
+            token: 'mock-jwt-token-' + Date.now()
           },
-          token: 'mock-jwt-token-' + Date.now()
-        },
-        message: 'Login successful'
-      });
+          message: 'Login successful'
+        });
+      } catch (error) {
+        console.error('Database login error:', error);
+        
+        // Fallback to accepting any login if database fails
+        const isAdmin = email === 'admin@travelballhub.com';
+        return res.status(200).json({
+          success: true,
+          data: {
+            user: {
+              id: isAdmin ? 'admin-user' : 'user-123',
+              email: email,
+              name: isAdmin ? 'Admin' : email.split('@')[0],
+              role: isAdmin ? 'ADMIN' : 'USER',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            token: 'mock-jwt-token-' + Date.now()
+          },
+          message: 'Login successful (fallback mode)'
+        });
+      }
     }
 
     if (req.method === 'GET') {
@@ -99,22 +147,51 @@ export default function handler(req: any, res: any) {
         });
       }
 
-      // Accept any registration
-      return res.status(201).json({
-        success: true,
-        data: {
-          user: {
-            id: 'user-' + Date.now(),
-            email: email,
-            name: name,
-            role: 'USER',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+      // Try to create user in database
+      try {
+        const { createUser, getUserByEmail, initializeDatabase } = await import('./postgres-db');
+        await initializeDatabase();
+        
+        // Check if user already exists
+        const existingUser = await getUserByEmail(email);
+        if (existingUser) {
+          return res.status(400).json({
+            success: false,
+            message: 'User with this email already exists'
+          });
+        }
+        
+        // Create new user in database
+        const newUser = await createUser({ email, password, name });
+        
+        return res.status(201).json({
+          success: true,
+          data: {
+            user: newUser,
+            token: 'mock-jwt-token-' + Date.now()
           },
-          token: 'mock-jwt-token-' + Date.now()
-        },
-        message: 'Registration successful'
-      });
+          message: 'Registration successful'
+        });
+      } catch (error) {
+        console.error('Database registration error:', error);
+        
+        // Fallback to mock registration if database fails
+        return res.status(201).json({
+          success: true,
+          data: {
+            user: {
+              id: 'user-' + Date.now(),
+              email: email,
+              name: name,
+              role: 'USER',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            },
+            token: 'mock-jwt-token-' + Date.now()
+          },
+          message: 'Registration successful (fallback mode)'
+        });
+      }
     }
 
     if (req.method === 'GET') {

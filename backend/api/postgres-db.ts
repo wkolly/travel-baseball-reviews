@@ -399,3 +399,71 @@ function formatTournament(row: any) {
     _count: { reviews: 0 }
   };
 }
+
+// User operations
+export async function createUser(userData: any) {
+  const pool = getPool();
+  
+  const newUser = {
+    id: 'user-' + Date.now(),
+    email: userData.email,
+    password: userData.password, // In production, this should be hashed
+    name: userData.name,
+    role: 'USER'
+  };
+
+  try {
+    await pool.query(`
+      INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      newUser.id, newUser.email, newUser.password, newUser.name, newUser.role,
+      new Date(), new Date()
+    ]);
+
+    // Fetch the created user to get timestamps
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [newUser.id]);
+    if (result.rows.length > 0) {
+      return formatUser(result.rows[0]);
+    }
+
+    // Fallback if fetch fails
+    return {
+      id: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+      role: newUser.role,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+}
+
+export async function getUserByEmail(email: string) {
+  const pool = getPool();
+  
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) return null;
+    
+    return formatUser(result.rows[0]);
+  } catch (error) {
+    console.error('Error getting user by email:', error);
+    throw error;
+  }
+}
+
+// Helper function to format user data
+function formatUser(row: any) {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    role: row.role,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
+}

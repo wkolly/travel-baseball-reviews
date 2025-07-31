@@ -8,6 +8,7 @@ import {
   approveTeam, 
   rejectTeam,
   getTeamStats,
+  getAllUsers,
   initializeDatabase
 } from './postgres-db';
 
@@ -199,56 +200,41 @@ export default async function handler(req: any, res: any) {
 
   if (url?.includes('/admin/users')) {
     if (req.method === 'GET') {
-      return res.status(200).json({
-        success: true,
-        data: {
-          users: [
-            {
-              id: 'admin-user',
-              email: 'admin@travelballhub.com',
-              name: 'Admin',
-              role: 'ADMIN',
-              createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-              updatedAt: new Date().toISOString(),
-              _count: { reviews: 0 }
-            },
-            {
-              id: 'user-1',
-              email: 'parent1@example.com',
-              name: 'Parent One',
-              role: 'USER',
-              createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 86400000).toISOString(),
-              _count: { reviews: 3 }
-            },
-            {
-              id: 'user-2',
-              email: 'coach@example.com',
-              name: 'Coach Smith',
-              role: 'USER',
-              createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-              _count: { reviews: 2 }
-            },
-            {
-              id: 'user-3',
-              email: 'parent2@example.com',
-              name: 'Parent Two',
-              role: 'USER',
-              createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-              updatedAt: new Date().toISOString(),
-              _count: { reviews: 1 }
+      try {
+        console.log('Admin users request - fetching real users from database');
+        const users = await getAllUsers();
+        console.log('Real users result:', users);
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            users: users,
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: users.length,
+              totalPages: Math.ceil(users.length / 20)
             }
-          ],
-          pagination: {
-            page: 1,
-            limit: 20,
-            total: 4,
-            totalPages: 1
-          }
-        },
-        message: 'Users retrieved successfully'
-      });
+          },
+          message: 'Users retrieved successfully'
+        });
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        return res.status(200).json({
+          success: true,
+          data: {
+            users: [],
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 1
+            }
+          },
+          message: 'No users found (error occurred)',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 

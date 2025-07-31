@@ -447,6 +447,30 @@ export async function createUser(userData: any) {
   }
 }
 
+export async function getAllUsers() {
+  const pool = getPool();
+  
+  try {
+    console.log('Executing getAllUsers query...');
+    const result = await pool.query('SELECT * FROM users ORDER BY "createdAt" DESC');
+    console.log('Users query result:', { rowCount: result.rows.length });
+    
+    const formattedUsers = result.rows.map(user => ({
+      ...formatUser(user),
+      _count: { reviews: 0 } // TODO: Add actual review count when reviews are implemented
+    }));
+    console.log('Formatted users:', formattedUsers);
+    
+    return formattedUsers;
+  } catch (error) {
+    console.error('Error getting all users:', error);
+    console.error('Database URL check:', process.env.DATABASE_URL ? 'Set' : 'Not Set');
+    
+    // Return empty array instead of throwing to prevent crashes
+    return [];
+  }
+}
+
 export async function getUserByEmail(email: string) {
   const pool = getPool();
   

@@ -136,14 +136,14 @@ const TournamentsPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Rating and Button Row */}
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center min-w-0 flex-1">
+              {/* Rating Section */}
+              <div className="mb-4">
+                <div className="flex items-center">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`h-4 w-4 ${
+                        className={`h-4 w-4 sm:h-5 sm:w-5 ${
                           i < Math.floor(tournament.avgRating)
                             ? 'text-yellow-400 fill-current'
                             : 'text-gray-300'
@@ -151,14 +151,17 @@ const TournamentsPage: React.FC = () => {
                       />
                     ))}
                   </div>
-                  <span className="ml-2 text-xs sm:text-sm text-gray-600">
-                    {tournament.avgRating.toFixed(1)} ({tournament._count.reviews})
+                  <span className="ml-2 text-sm text-gray-600">
+                    {tournament.avgRating.toFixed(1)} ({tournament._count.reviews} reviews)
                   </span>
                 </div>
+              </div>
 
+              {/* Button Section */}
+              <div className="pt-2 border-t border-gray-100">
                 <Link
                   to={`/tournaments/${tournament.id}`}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap flex-shrink-0"
+                  className="block w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-center"
                 >
                   View Reviews
                 </Link>

@@ -1,6 +1,6 @@
 {
   "name": "@travel-baseball/frontend",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Frontend React app for travel baseball platform",
   "type": "module",
   "scripts": {

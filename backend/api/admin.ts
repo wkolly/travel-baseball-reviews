@@ -10,6 +10,7 @@ import {
   getTeamStats,
   getAllUsers,
   getAllReviewsForAdmin,
+  getTotalReviewCount,
   deleteTeamReview,
   deleteTournamentReview,
   initializeDatabase
@@ -159,22 +160,27 @@ export default async function handler(req: any, res: any) {
   // Route handling based on URL path
   if (url?.includes('/admin/stats')) {
     if (req.method === 'GET') {
-      const teamStats = await getTeamStats();
-      const tournaments = await getAllTournaments();
-      
-      return res.status(200).json({
-        success: true,
-        data: {
-          teams: teamStats,
-          tournaments: {
-            total: tournaments.length
-          },
-          users: {
-            total: 5
-          },
-          reviews: {
-            total: 8
-          },
+      try {
+        const teamStats = await getTeamStats();
+        const tournaments = await getAllTournaments();
+        const users = await getAllUsers();
+        const reviewStats = await getTotalReviewCount();
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            teams: teamStats,
+            tournaments: {
+              total: tournaments.length
+            },
+            users: {
+              total: users.length
+            },
+            reviews: {
+              total: reviewStats.total,
+              teamReviews: reviewStats.teamReviews,
+              tournamentReviews: reviewStats.tournamentReviews
+            },
           recentActivity: [
             {
               id: '1',
@@ -198,6 +204,14 @@ export default async function handler(req: any, res: any) {
         },
         message: 'Admin stats retrieved successfully'
       });
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error retrieving admin stats',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 

@@ -756,6 +756,44 @@ export async function deleteTournamentReview(reviewId: string) {
   }
 }
 
+// Get total review count for admin stats
+export async function getTotalReviewCount() {
+  const pool = getPool();
+  
+  try {
+    console.log('Getting total review count...');
+    
+    // Get team reviews count
+    const teamReviewsResult = await pool.query('SELECT COUNT(*) FROM reviews');
+    const teamReviewsCount = parseInt(teamReviewsResult.rows[0].count);
+    
+    // Get tournament reviews count
+    const tournamentReviewsResult = await pool.query('SELECT COUNT(*) FROM tournament_reviews');
+    const tournamentReviewsCount = parseInt(tournamentReviewsResult.rows[0].count);
+    
+    const totalCount = teamReviewsCount + tournamentReviewsCount;
+    
+    console.log('Review counts:', { 
+      teamReviews: teamReviewsCount, 
+      tournamentReviews: tournamentReviewsCount, 
+      total: totalCount 
+    });
+    
+    return {
+      total: totalCount,
+      teamReviews: teamReviewsCount,
+      tournamentReviews: tournamentReviewsCount
+    };
+  } catch (error) {
+    console.error('Error getting total review count:', error);
+    return {
+      total: 0,
+      teamReviews: 0,
+      tournamentReviews: 0
+    };
+  }
+}
+
 // Get all reviews for admin dashboard (combined team and tournament reviews)
 export async function getAllReviewsForAdmin() {
   const pool = getPool();

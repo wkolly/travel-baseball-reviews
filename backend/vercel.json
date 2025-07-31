@@ -92,6 +92,10 @@
       "dest": "api/test-simple.ts"
     },
     {
+      "src": "/api/debug-teams(.*)",
+      "dest": "api/debug-teams.ts"
+    },
+    {
       "src": "/(.*)",
       "dest": "api/index.ts"
     }

@@ -103,7 +103,7 @@ function formatTeam(row: any) {
       name: row.contact || 'Team Contact',
       email: 'contact@example.com'
     },
-    _count: { reviews: 0 }
+    _count: { reviews: row.review_count ? parseInt(row.review_count) : 0 }
   };
 }
 
@@ -112,12 +112,18 @@ export async function getAllTeams() {
   const pool = getPool();
   
   try {
-    console.log('Executing getAllTeams query...');
-    const result = await pool.query('SELECT * FROM teams ORDER BY "createdAt" DESC');
+    console.log('Executing getAllTeams query with review counts...');
+    const result = await pool.query(`
+      SELECT t.*, COUNT(r.id)::text AS review_count
+      FROM teams t
+      LEFT JOIN reviews r ON t.id = r."teamId"
+      GROUP BY t.id, t.name, t.location, t.state, t."ageGroups", t.description, t.contact, t.status, t."suggestedBy", t."approvedBy", t."approvedAt", t."createdBy", t."createdAt", t."updatedAt"
+      ORDER BY t."createdAt" DESC
+    `);
     console.log('Query result:', { rowCount: result.rows.length });
     
     const formattedTeams = result.rows.map(formatTeam);
-    console.log('Formatted teams:', formattedTeams);
+    console.log('Formatted teams with review counts:', formattedTeams);
     
     return formattedTeams;
   } catch (error) {
@@ -301,12 +307,18 @@ export async function getAllTournaments() {
   const pool = getPool();
   
   try {
-    console.log('Executing getAllTournaments query...');
-    const result = await pool.query('SELECT * FROM tournaments ORDER BY "createdAt" DESC');
+    console.log('Executing getAllTournaments query with review counts...');
+    const result = await pool.query(`
+      SELECT t.*, COUNT(tr.id)::text AS review_count
+      FROM tournaments t
+      LEFT JOIN tournament_reviews tr ON t.id = tr."tournamentId"
+      GROUP BY t.id, t.name, t.location, t.description, t."createdBy", t."createdAt", t."updatedAt"
+      ORDER BY t."createdAt" DESC
+    `);
     console.log('Tournaments query result:', { rowCount: result.rows.length });
     
     const formattedTournaments = result.rows.map(formatTournament);
-    console.log('Formatted tournaments:', formattedTournaments);
+    console.log('Formatted tournaments with review counts:', formattedTournaments);
     
     return formattedTournaments;
   } catch (error) {
@@ -399,7 +411,7 @@ function formatTournament(row: any) {
       name: 'Tournament Creator',
       email: 'creator@example.com'
     },
-    _count: { reviews: 0 },
+    _count: { reviews: row.review_count ? parseInt(row.review_count) : 0 },
     // Add empty reviews array for compatibility
     reviews: []
   };
@@ -587,6 +599,100 @@ function formatReview(row: any) {
     value_rating: row.value_rating,
     organization_rating: row.organization_rating,
     playing_time_rating: row.playing_time_rating,
+    overall_rating: row.overall_rating,
+    comment: row.comment,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    // Add user info if userId exists (will need to join with users table later)
+    user: row.userId ? {
+      id: row.userId,
+      name: 'User', // TODO: Join with users table to get actual name
+      email: 'user@example.com'
+    } : null
+  };
+}
+
+// Tournament Review operations
+export async function createTournamentReview(reviewData: any) {
+  const pool = getPool();
+  
+  const newReview = {
+    id: 'tournament-review-' + Date.now(),
+    tournamentId: reviewData.tournamentId,
+    userId: reviewData.userId || null, // Can be null for anonymous reviews
+    overall_rating: parseFloat(reviewData.overall_rating) || 1.0,
+    comment: reviewData.comment || null
+  };
+
+  try {
+    await pool.query(`
+      INSERT INTO tournament_reviews (id, "tournamentId", "userId", overall_rating, comment, "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `, [
+      newReview.id, newReview.tournamentId, newReview.userId,
+      newReview.overall_rating, newReview.comment, new Date(), new Date()
+    ]);
+
+    // Fetch the created review to get timestamps
+    const result = await pool.query('SELECT * FROM tournament_reviews WHERE id = $1', [newReview.id]);
+    if (result.rows.length > 0) {
+      return formatTournamentReview(result.rows[0]);
+    }
+
+    // Fallback if fetch fails
+    return {
+      ...newReview,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error creating tournament review:', error);
+    throw error;
+  }
+}
+
+export async function getReviewsByTournamentId(tournamentId: string) {
+  const pool = getPool();
+  
+  try {
+    console.log('Fetching reviews for tournament:', tournamentId);
+    const result = await pool.query('SELECT * FROM tournament_reviews WHERE "tournamentId" = $1 ORDER BY "createdAt" DESC', [tournamentId]);
+    console.log('Tournament reviews query result:', { rowCount: result.rows.length });
+    
+    const formattedReviews = result.rows.map(formatTournamentReview);
+    console.log('Formatted tournament reviews:', formattedReviews);
+    
+    return formattedReviews;
+  } catch (error) {
+    console.error('Error getting tournament reviews by id:', error);
+    return [];
+  }
+}
+
+export async function getAllTournamentReviews() {
+  const pool = getPool();
+  
+  try {
+    console.log('Executing getAllTournamentReviews query...');
+    const result = await pool.query('SELECT * FROM tournament_reviews ORDER BY "createdAt" DESC');
+    console.log('All tournament reviews query result:', { rowCount: result.rows.length });
+    
+    const formattedReviews = result.rows.map(formatTournamentReview);
+    console.log('Formatted tournament reviews:', formattedReviews);
+    
+    return formattedReviews;
+  } catch (error) {
+    console.error('Error getting all tournament reviews:', error);
+    return [];
+  }
+}
+
+// Helper function to format tournament review data
+function formatTournamentReview(row: any) {
+  return {
+    id: row.id,
+    tournamentId: row.tournamentId,
+    userId: row.userId,
     overall_rating: row.overall_rating,
     comment: row.comment,
     createdAt: row.createdAt,

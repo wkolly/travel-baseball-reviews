@@ -1,4 +1,4 @@
-import { createTeamReview, getReviewsByTeamId, getAllReviews, initializeDatabase } from './postgres-db';
+import { createTeamReview, getReviewsByTeamId, getAllReviews, createTournamentReview, getReviewsByTournamentId, getAllTournamentReviews, initializeDatabase } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
@@ -104,51 +104,61 @@ export default async function handler(req: any, res: any) {
 
   // Handle tournament reviews
   if (url?.includes('/tournament-reviews')) {
-    if (req.method === 'GET') {
-      const tournamentIdMatch = url?.match(/\/tournament-reviews\/([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
-      const tournamentId = tournamentIdMatch?.[1] || '1';
+    try {
+      // Initialize database
+      await initializeDatabase();
       
-      console.log('Tournament reviews for tournament ID:', tournamentId);
-      
-      return res.status(200).json({
-        success: true,
-        data: {
-          reviews: [
-            { 
-              id: '1', 
-              tournamentId: tournamentId,
-              userId: null,
-              overall_rating: 4.5, 
-              facilities_rating: 4, 
-              organization_rating: 5, 
-              value_rating: 4, 
-              competition_rating: 5,
-              comment: 'Well organized tournament with great competition.',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            }
-          ]
-        },
-        message: 'Tournament reviews retrieved successfully'
-      });
-    }
+      if (req.method === 'GET') {
+        const tournamentIdMatch = url?.match(/\/tournament-reviews\/([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
+        const tournamentId = tournamentIdMatch?.[1] || '1';
+        
+        console.log('Tournament reviews for tournament ID:', tournamentId);
+        
+        const reviews = await getReviewsByTournamentId(tournamentId);
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            reviews: reviews
+          },
+          message: 'Tournament reviews retrieved successfully'
+        });
+      }
 
-    if (req.method === 'POST') {
-      const { facilities_rating, organization_rating, value_rating, competition_rating, overall_rating, comment } = req.body || {};
-      
-      return res.status(201).json({
-        success: true,
-        data: {
-          id: 'new-tournament-review-' + Date.now(),
-          facilities_rating: facilities_rating || 5,
-          organization_rating: organization_rating || 5,
-          value_rating: value_rating || 5,
-          competition_rating: competition_rating || 5,
-          overall_rating: overall_rating || 5,
-          comment: comment || '',
-          createdAt: new Date().toISOString()
-        },
-        message: 'Tournament review created successfully'
+      if (req.method === 'POST') {
+        const tournamentIdMatch = url?.match(/\/tournament-reviews\/([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
+        const tournamentId = tournamentIdMatch?.[1];
+        
+        if (!tournamentId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Tournament ID is required'
+          });
+        }
+        
+        const reviewData = {
+          tournamentId: tournamentId,
+          userId: req.body?.userId || null, // Can be null for anonymous reviews
+          overall_rating: req.body?.overall_rating,
+          comment: req.body?.comment
+        };
+        
+        console.log('Creating tournament review:', reviewData);
+        
+        const newReview = await createTournamentReview(reviewData);
+        
+        return res.status(201).json({
+          success: true,
+          data: newReview,
+          message: 'Tournament review created successfully'
+        });
+      }
+    } catch (error) {
+      console.error('Error handling tournament reviews:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error handling tournament reviews',
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   }

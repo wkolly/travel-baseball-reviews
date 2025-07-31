@@ -1,4 +1,4 @@
-import { getAllTournaments, createTournament, initializeDatabase } from './postgres-db';
+import { getAllTournaments, getTournamentById, createTournament, getReviewsByTournamentId, initializeDatabase } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers
@@ -20,8 +20,41 @@ export default async function handler(req: any, res: any) {
 
   // Handle GET requests
   if (req.method === 'GET') {
+    const { url } = req;
+    
     try {
       await initializeDatabase();
+      
+      // Check if this is a request for a specific tournament (e.g., /tournaments/1)
+      const tournamentIdMatch = url?.match(/\/tournaments\/([^\/\?]+)/);
+      if (tournamentIdMatch) {
+        const tournamentId = tournamentIdMatch[1];
+        
+        console.log('Individual tournament request for ID:', tournamentId);
+        
+        const tournament = await getTournamentById(tournamentId);
+        if (tournament) {
+          // Get real reviews from database
+          const reviews = await getReviewsByTournamentId(tournamentId);
+          const tournamentWithReviews = {
+            ...tournament,
+            reviews: reviews
+          };
+          
+          return res.status(200).json({
+            success: true,
+            data: tournamentWithReviews,
+            message: 'Tournament details retrieved successfully'
+          });
+        }
+        
+        return res.status(404).json({
+          success: false,
+          message: 'Tournament not found'
+        });
+      }
+      
+      // Return list of all tournaments
       const allTournaments = await getAllTournaments();
       
       return res.status(200).json({

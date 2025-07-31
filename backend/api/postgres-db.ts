@@ -299,8 +299,103 @@ export async function getTeamStats() {
   }
 }
 
-// Tournament operations - simplified for existing schema
+// Tournament operations using actual schema
 export async function getAllTournaments() {
-  // Return empty array since tournaments table may not exist in current schema
-  return [];
+  const pool = getPool();
+  
+  try {
+    console.log('Executing getAllTournaments query...');
+    const result = await pool.query('SELECT * FROM tournaments ORDER BY "createdAt" DESC');
+    console.log('Tournaments query result:', { rowCount: result.rows.length });
+    
+    const formattedTournaments = result.rows.map(formatTournament);
+    console.log('Formatted tournaments:', formattedTournaments);
+    
+    return formattedTournaments;
+  } catch (error) {
+    console.error('Error getting all tournaments:', error);
+    console.error('Database URL check:', process.env.DATABASE_URL ? 'Set' : 'Not Set');
+    
+    // Return empty array instead of throwing to prevent crashes
+    return [];
+  }
+}
+
+export async function getTournamentById(id: string) {
+  const pool = getPool();
+  
+  try {
+    const result = await pool.query('SELECT * FROM tournaments WHERE id = $1', [id]);
+    if (result.rows.length === 0) return null;
+    
+    return formatTournament(result.rows[0]);
+  } catch (error) {
+    console.error('Error getting tournament by id:', error);
+    throw error;
+  }
+}
+
+export async function createTournament(tournamentData: any) {
+  const pool = getPool();
+  
+  const newTournament = {
+    id: String(Date.now()),
+    name: tournamentData.name || 'New Tournament',
+    location: tournamentData.location || 'Unknown',
+    description: tournamentData.description || null,  // Can be null
+    createdBy: 'system-user'  // Use system user to satisfy foreign key constraint
+  };
+
+  try {
+    await pool.query(`
+      INSERT INTO tournaments (id, name, location, description, "createdBy")
+      VALUES ($1, $2, $3, $4, $5)
+    `, [
+      newTournament.id, newTournament.name, newTournament.location,
+      newTournament.description, newTournament.createdBy
+    ]);
+
+    // Fetch the created tournament to get timestamps
+    const result = await pool.query('SELECT * FROM tournaments WHERE id = $1', [newTournament.id]);
+    if (result.rows.length > 0) {
+      return formatTournament(result.rows[0]);
+    }
+
+    // Fallback if fetch fails
+    return {
+      id: newTournament.id,
+      name: newTournament.name,
+      location: newTournament.location,
+      description: newTournament.description,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      user: {
+        id: newTournament.createdBy,
+        name: 'System User',
+        email: 'system@travelbaseballreview.com'
+      },
+      _count: { reviews: 0 }
+    };
+  } catch (error) {
+    console.error('Error creating tournament:', error);
+    throw error;
+  }
+}
+
+// Helper function to format tournament data
+function formatTournament(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    location: row.location,
+    description: row.description || '',
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    user: {
+      id: row.createdBy || 'system-user',
+      name: 'Tournament Creator',
+      email: 'creator@example.com'
+    },
+    _count: { reviews: 0 }
+  };
 }

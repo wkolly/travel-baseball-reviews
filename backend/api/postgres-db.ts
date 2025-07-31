@@ -176,7 +176,7 @@ export async function createTeam(teamData: any) {
     name: teamData.name || 'New Team',
     location: teamData.location || 'Unknown',
     state: teamData.state || 'XX',
-    ageGroups: typeof teamData.ageGroups === 'string' ? teamData.ageGroups : JSON.stringify(teamData.ageGroups || []),
+    ageGroups: JSON.stringify(Array.isArray(teamData.ageGroups) ? teamData.ageGroups : (teamData.ageGroups ? [teamData.ageGroups] : [])),
     description: teamData.description || null,  // Can be null
     contact: teamData.contact || null,          // Can be null
     status: 'pending',

@@ -203,6 +203,56 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  // Handle profile requests
+  if (url?.includes('/auth/profile') || url?.includes('/profile')) {
+    if (req.method === 'GET') {
+      // Mock profile response for admin users
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.replace('Bearer ', '');
+      
+      // Simple token check - in production you'd validate the JWT
+      if (token && token.includes('mock-jwt-token')) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            user: {
+              id: 'admin-user',
+              email: 'admin@travelballhub.com',
+              name: 'Admin',
+              role: 'ADMIN',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          },
+          message: 'Profile retrieved successfully'
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized - invalid or missing token'
+        });
+      }
+    }
+
+    if (req.method === 'PUT') {
+      // Handle profile updates
+      return res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: {
+          user: {
+            id: 'admin-user',
+            email: 'admin@travelballhub.com',
+            name: req.body?.name || 'Admin',
+            role: 'ADMIN',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        }
+      });
+    }
+  }
+
   return res.status(405).json({
     success: false,
     message: 'Method not allowed'

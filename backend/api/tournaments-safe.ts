@@ -1,4 +1,6 @@
-export default function handler(req: any, res: any) {
+import { getAllTournaments, createTournament, initializeDatabase } from './postgres-db';
+
+export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
     'https://travelbaseballreview.com',
@@ -104,7 +106,6 @@ export default function handler(req: any, res: any) {
     
     // Return list of tournaments from database
     try {
-      const { getAllTournaments, initializeDatabase } = await import('./postgres-db');
       await initializeDatabase();
       
       const allTournaments = await getAllTournaments();
@@ -357,9 +358,6 @@ export default function handler(req: any, res: any) {
     console.log('Tournament creation received:', req.body);
     
     try {
-      // Import database functions and create tournament directly
-      const { createTournament, initializeDatabase } = await import('./postgres-db');
-      
       // Initialize database
       await initializeDatabase();
       

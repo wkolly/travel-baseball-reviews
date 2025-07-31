@@ -1,3 +1,5 @@
+import { getAllTeams, getTeamById, getPendingTeams, createTeam, initializeDatabase } from './postgres-db';
+
 export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
@@ -32,8 +34,6 @@ export default async function handler(req: any, res: any) {
     const { url } = req;
     
     try {
-      const { getAllTeams, getTeamById, initializeDatabase } = await import('./postgres-db');
-      
       // Initialize database
       await initializeDatabase();
       
@@ -121,7 +121,6 @@ export default async function handler(req: any, res: any) {
   // Debug endpoint to check team creation
   if (req.method === 'GET' && url?.includes('/debug-teams')) {
     try {
-      const { getAllTeams, getPendingTeams, initializeDatabase } = await import('./postgres-db');
       await initializeDatabase();
       
       const allTeams = await getAllTeams();
@@ -160,9 +159,6 @@ export default async function handler(req: any, res: any) {
     });
     
     try {
-      // Import database functions and create team directly
-      const { createTeam, initializeDatabase } = await import('./postgres-db');
-      
       // Initialize database
       await initializeDatabase();
       

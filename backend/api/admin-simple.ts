@@ -22,11 +22,15 @@ export default function handler(req: any, res: any) {
             name: "Test Team 1",
             location: "Test City",
             state: "TX",
-            ageGroups: ["12U"],
+            ageGroups: "[\"12U\"]",  // Try as JSON string
             description: "Test team",
             status: "pending",
             createdAt: "2025-07-31T10:00:00.000Z",
             updatedAt: "2025-07-31T10:00:00.000Z",
+            suggestedBy: null,
+            approvedBy: null,
+            approvedAt: null,
+            contact: null,
             user: {
               id: "test-user",
               name: "Test User",

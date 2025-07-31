@@ -348,11 +348,12 @@ export async function createTournament(tournamentData: any) {
 
   try {
     await pool.query(`
-      INSERT INTO tournaments (id, name, location, description, "createdBy")
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO tournaments (id, name, location, description, "createdBy", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
     `, [
       newTournament.id, newTournament.name, newTournament.location,
-      newTournament.description, newTournament.createdBy
+      newTournament.description, newTournament.createdBy,
+      new Date(), new Date()
     ]);
 
     // Fetch the created tournament to get timestamps

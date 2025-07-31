@@ -77,15 +77,11 @@ export async function initializeDatabase() {
 
 // Helper function to format team data for actual schema (camelCase)
 function formatTeam(row: any) {
-  // Parse ageGroups if it's a JSON string
+  // Keep ageGroups as JSON string for frontend compatibility
   let ageGroups = row.ageGroups || '[]';
-  if (typeof ageGroups === 'string') {
-    try {
-      ageGroups = JSON.parse(ageGroups);
-    } catch (e) {
-      console.warn('Failed to parse ageGroups JSON:', ageGroups);
-      ageGroups = [];
-    }
+  // Don't parse it - frontend expects JSON string
+  if (typeof ageGroups !== 'string') {
+    ageGroups = JSON.stringify(ageGroups);
   }
 
   return {

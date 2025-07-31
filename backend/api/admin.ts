@@ -271,11 +271,15 @@ export default async function handler(req: any, res: any) {
           name: team.name || 'Unknown Team',
           location: team.location || '',
           state: team.state || '',
-          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : [],
+          ageGroups: team.ageGroups || '[]',  // Keep as JSON string for frontend
           description: team.description || '',
           status: team.status || 'pending',
           createdAt: team.createdAt || new Date().toISOString(),
           updatedAt: team.updatedAt || new Date().toISOString(),
+          suggestedBy: team.suggestedBy || null,
+          approvedBy: team.approvedBy || null,
+          approvedAt: team.approvedAt || null,
+          contact: team.contact || null,
           user: {
             id: team.user?.id || 'unknown',
             name: team.user?.name || 'Unknown User',

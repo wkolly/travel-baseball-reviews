@@ -185,11 +185,12 @@ export async function createTeam(teamData: any) {
 
   try {
     await pool.query(`
-      INSERT INTO teams (id, name, location, state, "ageGroups", description, contact, status, "createdBy")
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO teams (id, name, location, state, "ageGroups", description, contact, status, "createdBy", "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     `, [
       newTeam.id, newTeam.name, newTeam.location, newTeam.state, newTeam.ageGroups,
-      newTeam.description, newTeam.contact, newTeam.status, newTeam.createdBy
+      newTeam.description, newTeam.contact, newTeam.status, newTeam.createdBy,
+      new Date(), new Date()
     ]);
 
     // Fetch the created team to get timestamps

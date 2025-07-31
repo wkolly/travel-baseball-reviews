@@ -9,6 +9,9 @@ import {
   rejectTeam,
   getTeamStats,
   getAllUsers,
+  getAllReviewsForAdmin,
+  deleteTeamReview,
+  deleteTournamentReview,
   initializeDatabase
 } from './postgres-db';
 
@@ -539,94 +542,41 @@ export default async function handler(req: any, res: any) {
 
   if (url?.includes('/admin/reviews')) {
     if (req.method === 'GET') {
-      return res.status(200).json({
-        success: true,
-        data: {
-          reviews: [
-            {
-              id: '1',
-              type: 'team',
-              teamId: '1',
-              team: { 
-                id: '1',
-                name: 'Atlanta Thunder',
-                location: 'Atlanta',
-                state: 'GA'
-              },
-              userId: 'user-1',
-              user: { 
-                id: 'user-1',
-                name: 'Parent One', 
-                email: 'parent1@example.com' 
-              },
-              overall_rating: 4.2,
-              coaching_rating: 4,
-              value_rating: 4,
-              organization_rating: 5,
-              playing_time_rating: 4,
-              comment: 'Great coaching staff and well organized team.',
-              createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 5 * 86400000).toISOString()
-            },
-            {
-              id: '2',
-              type: 'team',
-              teamId: '1',
-              team: { 
-                id: '1',
-                name: 'Atlanta Thunder',
-                location: 'Atlanta',
-                state: 'GA'
-              },
-              userId: 'user-2',
-              user: { 
-                id: 'user-2',
-                name: 'Coach Smith', 
-                email: 'coach@example.com' 
-              },
-              overall_rating: 4.8,
-              coaching_rating: 5,
-              value_rating: 4,
-              organization_rating: 5,
-              playing_time_rating: 5,
-              comment: 'Excellent team with great player development.',
-              createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 3 * 86400000).toISOString()
-            },
-            {
-              id: '3',
-              type: 'tournament',
-              tournamentId: '1',
-              tournament: { 
-                id: '1',
-                name: 'Summer Championship Series',
-                location: 'Orlando, FL'
-              },
-              userId: 'user-3',
-              user: { 
-                id: 'user-3',
-                name: 'Parent Two', 
-                email: 'parent2@example.com' 
-              },
-              overall_rating: 4.5,
-              facilities_rating: 4,
-              organization_rating: 5,
-              value_rating: 4,
-              competition_rating: 5,
-              comment: 'Well organized tournament with great competition.',
-              createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-              updatedAt: new Date(Date.now() - 2 * 86400000).toISOString()
+      try {
+        console.log('Admin reviews request - fetching real reviews from database');
+        const reviews = await getAllReviewsForAdmin();
+        console.log('Real reviews result:', reviews.length);
+        
+        return res.status(200).json({
+          success: true,
+          data: {
+            reviews: reviews,
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: reviews.length,
+              totalPages: Math.ceil(reviews.length / 20)
             }
-          ],
-          pagination: {
-            page: 1,
-            limit: 20,
-            total: 3,
-            totalPages: 1
-          }
-        },
-        message: 'Reviews retrieved successfully'
-      });
+          },
+          message: 'Reviews retrieved successfully'
+        });
+      } catch (error) {
+        console.error('Error fetching reviews for admin:', error);
+        return res.status(200).json({
+          success: true,
+          data: {
+            reviews: [],
+            pagination: {
+              page: 1,
+              limit: 20,
+              total: 0,
+              totalPages: 1
+            }
+          },
+          message: 'No reviews found (error occurred)',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 
@@ -728,25 +678,79 @@ export default async function handler(req: any, res: any) {
   // Handle review deletion endpoints
   if (url?.includes('/admin/reviews/teams/')) {
     if (req.method === 'DELETE') {
-      const reviewIdMatch = url?.match(/\/admin\/reviews\/teams\/([^\/\?]+)/);
-      const reviewId = reviewIdMatch?.[1];
-      
-      return res.status(200).json({
-        success: true,
-        message: 'Team review deleted successfully'
-      });
+      try {
+        const reviewIdMatch = url?.match(/\/admin\/reviews\/teams\/([^\/\?]+)/);
+        const reviewId = reviewIdMatch?.[1];
+        
+        if (!reviewId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Review ID is required'
+          });
+        }
+        
+        console.log('Deleting team review:', reviewId);
+        const deletedReview = await deleteTeamReview(reviewId);
+        
+        if (deletedReview) {
+          return res.status(200).json({
+            success: true,
+            data: deletedReview,
+            message: 'Team review deleted successfully'
+          });
+        }
+        
+        return res.status(404).json({
+          success: false,
+          message: 'Team review not found'
+        });
+      } catch (error) {
+        console.error('Error deleting team review:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error deleting team review',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 
   if (url?.includes('/admin/reviews/tournaments/')) {
     if (req.method === 'DELETE') {
-      const reviewIdMatch = url?.match(/\/admin\/reviews\/tournaments\/([^\/\?]+)/);
-      const reviewId = reviewIdMatch?.[1];
-      
-      return res.status(200).json({
-        success: true,
-        message: 'Tournament review deleted successfully'
-      });
+      try {
+        const reviewIdMatch = url?.match(/\/admin\/reviews\/tournaments\/([^\/\?]+)/);
+        const reviewId = reviewIdMatch?.[1];
+        
+        if (!reviewId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Review ID is required'
+          });
+        }
+        
+        console.log('Deleting tournament review:', reviewId);
+        const deletedReview = await deleteTournamentReview(reviewId);
+        
+        if (deletedReview) {
+          return res.status(200).json({
+            success: true,
+            data: deletedReview,
+            message: 'Tournament review deleted successfully'
+          });
+        }
+        
+        return res.status(404).json({
+          success: false,
+          message: 'Tournament review not found'
+        });
+      } catch (error) {
+        console.error('Error deleting tournament review:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error deleting tournament review',
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
   }
 

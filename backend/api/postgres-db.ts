@@ -718,3 +718,133 @@ function formatTournamentReview(row: any) {
     } : null
   };
 }
+
+// Review deletion functions
+export async function deleteTeamReview(reviewId: string) {
+  const pool = getPool();
+  
+  try {
+    // Get review before deletion
+    const review = await pool.query('SELECT * FROM reviews WHERE id = $1', [reviewId]);
+    if (review.rows.length === 0) return null;
+
+    // Delete the review
+    await pool.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
+    
+    return formatReview(review.rows[0]);
+  } catch (error) {
+    console.error('Error deleting team review:', error);
+    throw error;
+  }
+}
+
+export async function deleteTournamentReview(reviewId: string) {
+  const pool = getPool();
+  
+  try {
+    // Get review before deletion
+    const review = await pool.query('SELECT * FROM tournament_reviews WHERE id = $1', [reviewId]);
+    if (review.rows.length === 0) return null;
+
+    // Delete the review
+    await pool.query('DELETE FROM tournament_reviews WHERE id = $1', [reviewId]);
+    
+    return formatTournamentReview(review.rows[0]);
+  } catch (error) {
+    console.error('Error deleting tournament review:', error);
+    throw error;
+  }
+}
+
+// Get all reviews for admin dashboard (combined team and tournament reviews)
+export async function getAllReviewsForAdmin() {
+  const pool = getPool();
+  
+  try {
+    console.log('Executing getAllReviewsForAdmin query...');
+    
+    // Get team reviews
+    const teamReviewsResult = await pool.query(`
+      SELECT r.*, 'team' as review_type, t.name as subject_name, t.location as subject_location
+      FROM reviews r
+      LEFT JOIN teams t ON r."teamId" = t.id
+      ORDER BY r."createdAt" DESC
+    `);
+    
+    // Get tournament reviews  
+    const tournamentReviewsResult = await pool.query(`
+      SELECT tr.*, 'tournament' as review_type, t.name as subject_name, t.location as subject_location
+      FROM tournament_reviews tr
+      LEFT JOIN tournaments t ON tr."tournamentId" = t.id
+      ORDER BY tr."createdAt" DESC
+    `);
+    
+    // Format team reviews
+    const formattedTeamReviews = teamReviewsResult.rows.map(row => ({
+      id: row.id,
+      type: 'team',
+      teamId: row.teamId,
+      tournamentId: null,
+      userId: row.userId,
+      overall_rating: row.overall_rating,
+      coaching_rating: row.coaching_rating,
+      value_rating: row.value_rating,
+      organization_rating: row.organization_rating,
+      playing_time_rating: row.playing_time_rating,
+      comment: row.comment,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      team: row.teamId ? {
+        id: row.teamId,
+        name: row.subject_name || 'Unknown Team',
+        location: row.subject_location || '',
+        state: ''
+      } : null,
+      tournament: null,
+      user: row.userId ? {
+        id: row.userId,
+        name: 'User',
+        email: 'user@example.com'
+      } : null
+    }));
+    
+    // Format tournament reviews
+    const formattedTournamentReviews = tournamentReviewsResult.rows.map(row => ({
+      id: row.id,
+      type: 'tournament',
+      teamId: null,
+      tournamentId: row.tournamentId,
+      userId: row.userId,
+      overall_rating: row.overall_rating,
+      coaching_rating: null,
+      value_rating: null,
+      organization_rating: null,
+      playing_time_rating: null,
+      comment: row.comment,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      team: null,
+      tournament: row.tournamentId ? {
+        id: row.tournamentId,
+        name: row.subject_name || 'Unknown Tournament',
+        location: row.subject_location || ''
+      } : null,
+      user: row.userId ? {
+        id: row.userId,
+        name: 'User',
+        email: 'user@example.com'
+      } : null
+    }));
+    
+    // Combine and sort by creation date
+    const allReviews = [...formattedTeamReviews, ...formattedTournamentReviews];
+    allReviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    console.log('Admin reviews result:', { totalCount: allReviews.length, teamReviews: formattedTeamReviews.length, tournamentReviews: formattedTournamentReviews.length });
+    
+    return allReviews;
+  } catch (error) {
+    console.error('Error getting all reviews for admin:', error);
+    return [];
+  }
+}

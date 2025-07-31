@@ -100,6 +100,10 @@
       "dest": "api/debug-schema.ts"
     },
     {
+      "src": "/api/debug-tournament-reviews(.*)",
+      "dest": "api/debug-tournament-reviews.ts"
+    },
+    {
       "src": "/(.*)",
       "dest": "api/index.ts"
     }

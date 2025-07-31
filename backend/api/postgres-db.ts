@@ -25,23 +25,51 @@ export async function initializeDatabase() {
   // Ensure system user exists for foreign key constraints
   const pool = getPool();
   try {
-    await pool.query(`
-      INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt")
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      ON CONFLICT (id) DO NOTHING
-    `, [
-      'system-user',
-      'system@travelbaseballreview.com',
-      'system-password-hash',
-      'System User',
-      'SYSTEM',
-      new Date(),
-      new Date()
-    ]);
-    console.log('✅ System user ensured');
+    // First check what columns exist in users table
+    const userColumnsResult = await pool.query(`
+      SELECT column_name FROM information_schema.columns 
+      WHERE table_name = 'users' AND table_schema = 'public'
+      ORDER BY ordinal_position
+    `);
+    
+    const userColumns = userColumnsResult.rows.map(row => row.column_name);
+    console.log('Users table columns:', userColumns);
+    
+    // Create system user with required fields
+    if (userColumns.includes('password') && userColumns.includes('role')) {
+      await pool.query(`
+        INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt")
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (id) DO NOTHING
+      `, [
+        'system-user',
+        'system@travelbaseballreview.com',
+        'system-password-hash',
+        'System User',
+        'SYSTEM',
+        new Date(),
+        new Date()
+      ]);
+    } else {
+      // Fallback with minimal fields
+      await pool.query(`
+        INSERT INTO users (id, email, name, "createdAt", "updatedAt")
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id) DO NOTHING
+      `, [
+        'system-user',
+        'system@travelbaseballreview.com',
+        'System User',
+        new Date(),
+        new Date()
+      ]);
+    }
+    
+    console.log('✅ System user ensured in production database');
   } catch (error) {
     console.error('Warning: Could not ensure system user exists:', error.message);
-    // Don't throw - the user might already exist
+    console.error('Error details:', error);
+    // Don't throw - continue anyway
   }
   
   return;

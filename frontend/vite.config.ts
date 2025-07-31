@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { cspPlugin } from './vite-csp-plugin.js'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), cspPlugin()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -21,6 +22,14 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true
+      }
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // Ensure CSP meta tag is preserved during build
+        manualChunks: undefined
       }
     }
   }

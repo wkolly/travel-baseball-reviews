@@ -1,4 +1,6 @@
-export default function handler(req: any, res: any) {
+import { createUser, getUserByEmail, initializeDatabase } from './postgres-db';
+
+export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
   const allowedOrigins = [
     'https://travelbaseballreview.com',
@@ -44,7 +46,6 @@ export default function handler(req: any, res: any) {
 
       // Try to authenticate with database
       try {
-        const { getUserByEmail, initializeDatabase } = await import('./postgres-db');
         await initializeDatabase();
         
         // Check if admin user
@@ -149,7 +150,6 @@ export default function handler(req: any, res: any) {
 
       // Try to create user in database
       try {
-        const { createUser, getUserByEmail, initializeDatabase } = await import('./postgres-db');
         await initializeDatabase();
         
         // Check if user already exists

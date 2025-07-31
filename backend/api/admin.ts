@@ -271,7 +271,7 @@ export default async function handler(req: any, res: any) {
           name: team.name || 'Unknown Team',
           location: team.location || '',
           state: team.state || '',
-          ageGroups: team.ageGroups || '[]',  // Keep as JSON string for frontend
+          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : (team.ageGroups ? JSON.parse(team.ageGroups) : []),
           description: team.description || '',
           status: team.status || 'pending',
           createdAt: team.createdAt || new Date().toISOString(),
@@ -632,7 +632,7 @@ export default async function handler(req: any, res: any) {
           name: team.name || 'Unknown Team',
           location: team.location || '',
           state: team.state || '',
-          ageGroups: team.ageGroups || '[]',  // Keep as JSON string for frontend
+          ageGroups: Array.isArray(team.ageGroups) ? team.ageGroups : (team.ageGroups ? JSON.parse(team.ageGroups) : []),
           description: team.description || '',
           status: team.status || 'pending',
           createdAt: team.createdAt || new Date().toISOString(),

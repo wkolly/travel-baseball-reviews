@@ -232,7 +232,7 @@ const TournamentsPage: React.FC = () => {
       </div>
 
       {/* Tournament Cards */}
-      <div className="grid gap-3 sm:gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {tournaments.map((tournament) => (
           <TournamentCard key={tournament.id} tournament={tournament} />
         ))}

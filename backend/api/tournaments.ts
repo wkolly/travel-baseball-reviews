@@ -1,4 +1,4 @@
-import { getAllTournaments, getTournamentById, createTournament, getReviewsByTournamentId, initializeDatabase } from './postgres-db';
+import { getAllTournaments, getTournamentById, createTournament, getReviewsByTournamentId, initializeDatabase, extractUserIdFromToken } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers
@@ -117,7 +117,12 @@ export default async function handler(req: any, res: any) {
     
     try {
       await initializeDatabase();
-      const newTournament = await createTournament(req.body);
+      
+      // Extract user ID from authorization header
+      const userId = extractUserIdFromToken(req.headers.authorization);
+      console.log('Creating tournament with user ID:', userId);
+      
+      const newTournament = await createTournament(req.body, userId);
       
       console.log('Tournament created in database:', newTournament);
       

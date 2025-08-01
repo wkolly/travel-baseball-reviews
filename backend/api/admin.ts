@@ -15,7 +15,8 @@ import {
   getTotalReviewCount,
   deleteTeamReview,
   deleteTournamentReview,
-  initializeDatabase
+  initializeDatabase,
+  extractUserIdFromToken
 } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
@@ -142,7 +143,11 @@ export default async function handler(req: any, res: any) {
     console.log('Team suggestion received at top level:', req.body);
     
     try {
-      const newTeam = await createTeam(req.body);
+      // Extract user ID from authorization header
+      const userId = extractUserIdFromToken(req.headers.authorization);
+      console.log('Creating team via admin suggest with user ID:', userId);
+      
+      const newTeam = await createTeam(req.body, userId);
       console.log('Team added to database:', newTeam);
       
       return res.status(201).json({
@@ -358,7 +363,11 @@ export default async function handler(req: any, res: any) {
       console.log('Team suggestion received in admin:', req.body);
       
       try {
-        const newTeam = await createTeam(req.body);
+        // Extract user ID from authorization header
+        const userId = extractUserIdFromToken(req.headers.authorization);
+        console.log('Creating team via admin teams suggest with user ID:', userId);
+        
+        const newTeam = await createTeam(req.body, userId);
         console.log('Team added to database:', newTeam);
         
         return res.status(201).json({

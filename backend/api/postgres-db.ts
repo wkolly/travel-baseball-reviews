@@ -75,6 +75,36 @@ export async function initializeDatabase() {
   return;
 }
 
+// Helper function to extract user ID from authorization token
+export function extractUserIdFromToken(authHeader: string | undefined): string | null {
+  if (!authHeader) return null;
+  
+  const token = authHeader.replace('Bearer ', '');
+  
+  if (!token || !token.includes('mock-jwt-token')) {
+    return null;
+  }
+  
+  // Handle admin token
+  if (token === 'mock-jwt-token' || token.includes('mock-jwt-token-admin-user')) {
+    return 'admin-user';
+  }
+  
+  try {
+    // Parse token: mock-jwt-token-{userId}-{timestamp}
+    const tokenParts = token.split('-');
+    if (tokenParts.length >= 4 && tokenParts[0] === 'mock' && tokenParts[1] === 'jwt' && tokenParts[2] === 'token') {
+      // Remove 'mock', 'jwt', 'token' parts and timestamp, get user ID
+      const userId = tokenParts.slice(3, -1).join('-'); // Handle user IDs that might have hyphens
+      return userId && userId.trim() ? userId : null;
+    }
+  } catch (error) {
+    console.error('Error parsing token:', error);
+  }
+  
+  return null;
+}
+
 // Helper function to format team data for actual schema (camelCase)
 function formatTeam(row: any) {
   // Keep ageGroups as JSON string for frontend compatibility
@@ -182,7 +212,7 @@ export async function getPendingTeams() {
   }
 }
 
-export async function createTeam(teamData: any) {
+export async function createTeam(teamData: any, createdByUserId?: string) {
   const pool = getPool();
   
   const newTeam = {
@@ -194,7 +224,7 @@ export async function createTeam(teamData: any) {
     description: teamData.description || null,  // Can be null
     contact: teamData.contact || null,          // Can be null
     status: 'pending',
-    createdBy: 'system-user'  // Use system user to satisfy foreign key constraint
+    createdBy: createdByUserId || 'system-user'  // Use provided user ID or fallback to system user
   };
 
   try {
@@ -391,7 +421,7 @@ export async function updateTournament(id: string, updates: any) {
   }
 }
 
-export async function createTournament(tournamentData: any) {
+export async function createTournament(tournamentData: any, createdByUserId?: string) {
   const pool = getPool();
   
   const newTournament = {
@@ -399,7 +429,7 @@ export async function createTournament(tournamentData: any) {
     name: tournamentData.name || 'New Tournament',
     location: tournamentData.location || 'Unknown',
     description: tournamentData.description || null,  // Can be null
-    createdBy: 'system-user'  // Use system user to satisfy foreign key constraint
+    createdBy: createdByUserId || 'system-user'  // Use provided user ID or fallback to system user
   };
 
   try {

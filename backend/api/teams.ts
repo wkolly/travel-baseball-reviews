@@ -1,4 +1,4 @@
-import { getAllTeams, getTeamById, getPendingTeams, createTeam, getReviewsByTeamId, initializeDatabase } from './postgres-db';
+import { getAllTeams, getTeamById, getPendingTeams, createTeam, getReviewsByTeamId, initializeDatabase, extractUserIdFromToken } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
@@ -268,7 +268,11 @@ export default async function handler(req: any, res: any) {
       // Initialize database
       await initializeDatabase();
       
-      const newTeam = await createTeam(req.body);
+      // Extract user ID from authorization header
+      const userId = extractUserIdFromToken(req.headers.authorization);
+      console.log('Creating team with user ID:', userId);
+      
+      const newTeam = await createTeam(req.body, userId);
       
       console.log('Team created in database:', newTeam);
       

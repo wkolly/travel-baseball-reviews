@@ -96,9 +96,77 @@ export default async function handler(req: any, res: any) {
         });
       }
       
+      // Parse query parameters for filtering
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      const searchQuery = urlObj.searchParams.get('search') || '';
+      const stateQuery = urlObj.searchParams.get('state') || '';
+      const ageGroupQuery = urlObj.searchParams.get('ageGroup') || '';
+      const minRatingQuery = urlObj.searchParams.get('minRating') || '';
+      
+      console.log('Team query parameters:', { 
+        search: searchQuery, 
+        state: stateQuery, 
+        ageGroup: ageGroupQuery, 
+        minRating: minRatingQuery 
+      });
+      
       // Return list of approved teams only (for public API)
       const allTeams = await getAllTeams();
-      const approvedTeams = allTeams.filter(team => team.status === 'approved');
+      let approvedTeams = allTeams.filter(team => team.status === 'approved');
+      
+      // Apply search filtering
+      if (searchQuery) {
+        approvedTeams = approvedTeams.filter(team => 
+          team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          team.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (team.description && team.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+      }
+      
+      // Apply state filtering
+      if (stateQuery) {
+        approvedTeams = approvedTeams.filter(team => 
+          team.state && team.state.toLowerCase() === stateQuery.toLowerCase()
+        );
+      }
+      
+      // Apply age group filtering
+      if (ageGroupQuery) {
+        approvedTeams = approvedTeams.filter(team => {
+          try {
+            if (!team.ageGroups) return false;
+            
+            let ageGroupsArray = [];
+            if (typeof team.ageGroups === 'string') {
+              // Try to parse as JSON
+              try {
+                const parsed = JSON.parse(team.ageGroups);
+                ageGroupsArray = Array.isArray(parsed) ? parsed : [parsed];
+              } catch {
+                // If not JSON, treat as single value
+                ageGroupsArray = [team.ageGroups];
+              }
+            } else {
+              ageGroupsArray = Array.isArray(team.ageGroups) ? team.ageGroups : [team.ageGroups];
+            }
+            
+            return ageGroupsArray.some(age => 
+              String(age).toLowerCase().includes(ageGroupQuery.toLowerCase())
+            );
+          } catch (error) {
+            console.warn('Error filtering by age group for team', team.id, ':', error);
+            return false;
+          }
+        });
+      }
+      
+      // Apply minimum rating filtering (we'll need to calculate average ratings)
+      if (minRatingQuery) {
+        const minRating = parseFloat(minRatingQuery);
+        // For now, we'll skip rating filtering since we'd need to join with reviews
+        // This would require a more complex database query
+        console.log('Rating filtering not yet implemented, skipping minRating:', minRating);
+      }
       
       // Format teams with proper ageGroups handling for frontend
       const formattedTeams = approvedTeams.map(team => ({

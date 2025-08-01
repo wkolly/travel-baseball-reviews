@@ -625,6 +625,27 @@ function formatReview(row: any) {
   };
 }
 
+export async function deleteTournament(tournamentId: string) {
+  const pool = getPool();
+  
+  try {
+    // First, delete all reviews for this tournament to maintain referential integrity
+    await pool.query('DELETE FROM tournament_reviews WHERE "tournamentId" = $1', [tournamentId]);
+    
+    // Then delete the tournament itself
+    const result = await pool.query('DELETE FROM tournaments WHERE id = $1 RETURNING *', [tournamentId]);
+    
+    if (result.rows.length === 0) {
+      throw new Error('Tournament not found');
+    }
+    
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error deleting tournament:', error);
+    throw error;
+  }
+}
+
 // Tournament Review operations
 export async function createTournamentReview(reviewData: any) {
   const pool = getPool();

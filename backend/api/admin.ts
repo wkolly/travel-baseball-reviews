@@ -5,6 +5,7 @@ import {
   createTeam, 
   updateTeam, 
   deleteTeam, 
+  deleteTournament,
   approveTeam, 
   rejectTeam,
   getTeamStats,
@@ -532,25 +533,41 @@ export default async function handler(req: any, res: any) {
     }
 
     if (req.method === 'DELETE') {
-      const tournamentIdMatch = url?.match(/\/admin\/tournaments\/([^\/\?]+)/);
-      const tournamentId = tournamentIdMatch?.[1];
-      
-      // Find and remove the tournament
-      const tournamentIndex = tournamentsData.findIndex(t => t.id === tournamentId);
-      if (tournamentIndex !== -1) {
-        const deletedTournament = tournamentsData.splice(tournamentIndex, 1)[0];
+      try {
+        const tournamentIdMatch = url?.match(/\/admin\/tournaments\/([^\/\?]+)/);
+        const tournamentId = tournamentIdMatch?.[1];
+        
+        if (!tournamentId) {
+          return res.status(400).json({
+            success: false,
+            message: 'Tournament ID is required'
+          });
+        }
+        
+        console.log('Deleting tournament:', tournamentId);
+        const deletedTournament = await deleteTournament(tournamentId);
         
         return res.status(200).json({
           success: true,
           data: deletedTournament,
           message: 'Tournament deleted successfully'
         });
+      } catch (error) {
+        console.error('Error deleting tournament:', error);
+        
+        if (error instanceof Error && error.message === 'Tournament not found') {
+          return res.status(404).json({
+            success: false,
+            message: 'Tournament not found'
+          });
+        }
+        
+        return res.status(500).json({
+          success: false,
+          message: 'Error deleting tournament',
+          error: error instanceof Error ? error.message : String(error)
+        });
       }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Tournament not found'
-      });
     }
   }
 

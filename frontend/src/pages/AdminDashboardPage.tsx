@@ -304,11 +304,24 @@ const AdminDashboardPage: React.FC = () => {
 
   const handleEditTeam = (team: Team) => {
     setEditingTeam(team);
+    
+    // Safely parse ageGroups with fallback
+    let parsedAgeGroups: string[] = [];
+    try {
+      if (team.ageGroups) {
+        const parsed = JSON.parse(team.ageGroups);
+        parsedAgeGroups = Array.isArray(parsed) ? parsed : [parsed];
+      }
+    } catch (error) {
+      console.warn('Failed to parse ageGroups for team', team.id, ':', error);
+      parsedAgeGroups = [];
+    }
+    
     setTeamEditForm({
       name: team.name,
       location: team.location,
       state: team.state,
-      ageGroups: JSON.parse(team.ageGroups),
+      ageGroups: parsedAgeGroups,
       description: team.description || '',
       contact: team.contact || ''
     });
@@ -316,9 +329,22 @@ const AdminDashboardPage: React.FC = () => {
 
   const handleUpdateTeam = () => {
     if (!editingTeam) return;
+    
+    // Validate that at least one age group is selected
+    if (teamEditForm.ageGroups.length === 0) {
+      toast.error('Please select at least one age group');
+      return;
+    }
+    
+    // Format the data for the backend - convert ageGroups array to JSON string
+    const formattedData = {
+      ...teamEditForm,
+      ageGroups: JSON.stringify(teamEditForm.ageGroups)
+    };
+    
     updateTeamMutation.mutate({
       teamId: editingTeam.id,
-      data: teamEditForm
+      data: formattedData
     });
   };
 
@@ -874,6 +900,37 @@ const AdminDashboardPage: React.FC = () => {
                       <option key={state} value={state}>{state}</option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Age Groups</label>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {['8U', '9U', '10U', '11U', '12U', '13U', '14U', '15U', '16U', '17U', '18U'].map((age) => (
+                      <label key={age} className="inline-flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={teamEditForm.ageGroups.includes(age)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setTeamEditForm({
+                                ...teamEditForm,
+                                ageGroups: [...teamEditForm.ageGroups, age]
+                              });
+                            } else {
+                              setTeamEditForm({
+                                ...teamEditForm,
+                                ageGroups: teamEditForm.ageGroups.filter(g => g !== age)
+                              });
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">{age}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {teamEditForm.ageGroups.length === 0 && (
+                    <p className="text-sm text-red-600 mt-1">Please select at least one age group.</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Description</label>

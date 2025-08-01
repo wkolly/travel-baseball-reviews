@@ -161,19 +161,19 @@ const TournamentsPage: React.FC = () => {
       {/* Login Call-to-Action for non-authenticated users */}
       {!isAuthenticated && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold text-blue-900 mb-1">
                 Host tournaments?
               </h3>
-              <p className="text-blue-700">
+              <p className="text-blue-700 text-sm sm:text-base">
                 List your tournaments and help families find great baseball events in their area.
               </p>
             </div>
-            <div className="flex gap-2 ml-4">
+            <div className="flex gap-2 sm:ml-4 sm:flex-shrink-0">
               <Link
                 to="/register"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap w-full sm:w-auto text-center"
               >
                 Sign Up Free
               </Link>

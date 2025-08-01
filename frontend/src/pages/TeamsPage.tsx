@@ -61,7 +61,7 @@ const TeamsPage: React.FC = () => {
           </p>
         </div>
         
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <Link
             to="/teams/create"
             className="btn-primary inline-flex items-center"
@@ -69,8 +69,45 @@ const TeamsPage: React.FC = () => {
             <Plus className="h-5 w-5 mr-2" />
             Add Your Team
           </Link>
+        ) : (
+          <div className="text-right">
+            <Link
+              to="/login"
+              className="btn-primary inline-flex items-center"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Login to Add Your Team
+            </Link>
+            <p className="text-sm text-gray-500 mt-1">
+              Create an account to list your team
+            </p>
+          </div>
         )}
       </div>
+
+      {/* Login Call-to-Action for non-authenticated users */}
+      {!isAuthenticated && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-1">
+                Have a travel baseball team?
+              </h3>
+              <p className="text-blue-700">
+                Join our community and get your team discovered by families looking for quality baseball programs.
+              </p>
+            </div>
+            <div className="flex gap-2 ml-4">
+              <Link
+                to="/register"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+              >
+                Sign Up Free
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <TeamFilters

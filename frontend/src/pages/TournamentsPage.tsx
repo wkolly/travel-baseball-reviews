@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { MapPin, Trophy, Search, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Trophy, Search, Star, ChevronDown, ChevronUp, Plus } from 'lucide-react';
 import { tournamentsAPI } from '@/services/api';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface Tournament {
@@ -93,6 +94,7 @@ const TournamentCard: React.FC<{ tournament: Tournament }> = ({ tournament }) =>
 };
 
 const TournamentsPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
 
@@ -124,12 +126,61 @@ const TournamentsPage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Tournament Directory</h1>
-        <p className="text-lg text-gray-600">
-          Find tournaments and read reviews from other families about their experiences.
-        </p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Tournament Directory</h1>
+          <p className="text-lg text-gray-600">
+            Find tournaments and read reviews from other families about their experiences.
+          </p>
+        </div>
+        
+        {isAuthenticated ? (
+          <Link
+            to="/tournaments/create"
+            className="btn-primary inline-flex items-center"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add Tournament
+          </Link>
+        ) : (
+          <div className="text-right">
+            <Link
+              to="/login"
+              className="btn-primary inline-flex items-center"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Login to Add Tournament
+            </Link>
+            <p className="text-sm text-gray-500 mt-1">
+              Create an account to list tournaments
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* Login Call-to-Action for non-authenticated users */}
+      {!isAuthenticated && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-1">
+                Host tournaments?
+              </h3>
+              <p className="text-blue-700">
+                List your tournaments and help families find great baseball events in their area.
+              </p>
+            </div>
+            <div className="flex gap-2 ml-4">
+              <Link
+                to="/register"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+              >
+                Sign Up Free
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search and Filters */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -191,21 +242,30 @@ const TournamentsPage: React.FC = () => {
         <div className="text-center py-12">
           <Trophy className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No tournaments found</h3>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             {(debouncedSearch || debouncedLocation) 
               ? 'Try adjusting your search criteria to find more tournaments.'
-              : 'Check back later for new tournaments.'}
+              : 'Be the first to add a tournament to the platform!'}
           </p>
-          {(debouncedSearch || debouncedLocation) && (
+          {(debouncedSearch || debouncedLocation) ? (
             <button
               onClick={() => {
                 setSearchTerm('');
                 setSelectedLocation('');
               }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Clear Filters
             </button>
+          ) : isAuthenticated ? (
+            <Link to="/tournaments/create" className="btn-primary">
+              <Plus className="h-5 w-5 mr-2" />
+              Add First Tournament
+            </Link>
+          ) : (
+            <Link to="/register" className="btn-primary">
+              Sign Up to Add Tournaments
+            </Link>
           )}
         </div>
       )}

@@ -107,8 +107,8 @@ function formatTeam(row: any) {
     overallRating: avgRating,
     user: {
       id: row.createdBy || 'system-user',
-      name: row.contact || 'Team Contact',
-      email: 'contact@example.com'
+      name: row.creator_name || row.contact || 'Unknown User',
+      email: row.creator_email || 'unknown@example.com'
     },
     _count: { reviews: row.review_count ? parseInt(row.review_count) : 0 }
   };
@@ -119,14 +119,17 @@ export async function getAllTeams() {
   const pool = getPool();
   
   try {
-    console.log('Executing getAllTeams query with review counts and average ratings...');
+    console.log('Executing getAllTeams query with review counts, average ratings, and user info...');
     const result = await pool.query(`
       SELECT t.*, 
              COUNT(r.id)::text AS review_count,
-             COALESCE(AVG(r.overall_rating), 0)::text AS average_rating
+             COALESCE(AVG(r.overall_rating), 0)::text AS average_rating,
+             u.name AS creator_name,
+             u.email AS creator_email
       FROM teams t
       LEFT JOIN reviews r ON t.id = r."teamId"
-      GROUP BY t.id, t.name, t.location, t.state, t."ageGroups", t.description, t.contact, t.status, t."suggestedBy", t."approvedBy", t."approvedAt", t."createdBy", t."createdAt", t."updatedAt"
+      LEFT JOIN users u ON t."createdBy" = u.id
+      GROUP BY t.id, t.name, t.location, t.state, t."ageGroups", t.description, t.contact, t.status, t."suggestedBy", t."approvedBy", t."approvedAt", t."createdBy", t."createdAt", t."updatedAt", u.name, u.email
       ORDER BY t."createdAt" DESC
     `);
     console.log('Query result:', { rowCount: result.rows.length });
@@ -246,8 +249,8 @@ export async function updateTeam(id: string, updates: any) {
     // Update the team using actual schema
     await pool.query(`
       UPDATE teams 
-      SET name = $1, location = $2, state = $3, "ageGroups" = $4, description = $5, status = $6, "updatedAt" = CURRENT_TIMESTAMP
-      WHERE id = $7
+      SET name = $1, location = $2, state = $3, "ageGroups" = $4, description = $5, status = $6, "createdBy" = $7, "updatedAt" = CURRENT_TIMESTAMP
+      WHERE id = $8
     `, [
       updates.name || currentTeam.name,
       updates.location || currentTeam.location,
@@ -255,6 +258,7 @@ export async function updateTeam(id: string, updates: any) {
       typeof updates.ageGroups === 'string' ? updates.ageGroups : JSON.stringify(updates.ageGroups || currentTeam.ageGroups),
       updates.description || currentTeam.description,
       updates.status || currentTeam.status,
+      updates.createdBy || currentTeam.user?.id || 'system-user',
       id
     ]);
 
@@ -316,14 +320,17 @@ export async function getAllTournaments() {
   const pool = getPool();
   
   try {
-    console.log('Executing getAllTournaments query with review counts and average ratings...');
+    console.log('Executing getAllTournaments query with review counts, average ratings, and user info...');
     const result = await pool.query(`
       SELECT t.*, 
              COUNT(tr.id)::text AS review_count,
-             COALESCE(AVG(tr.overall_rating), 0)::text AS average_rating
+             COALESCE(AVG(tr.overall_rating), 0)::text AS average_rating,
+             u.name AS creator_name,
+             u.email AS creator_email
       FROM tournaments t
       LEFT JOIN tournament_reviews tr ON t.id = tr."tournamentId"
-      GROUP BY t.id, t.name, t.location, t.description, t."createdBy", t."createdAt", t."updatedAt"
+      LEFT JOIN users u ON t."createdBy" = u.id
+      GROUP BY t.id, t.name, t.location, t.description, t."createdBy", t."createdAt", t."updatedAt", u.name, u.email
       ORDER BY t."createdAt" DESC
     `);
     console.log('Tournaments query result:', { rowCount: result.rows.length });
@@ -351,6 +358,35 @@ export async function getTournamentById(id: string) {
     return formatTournament(result.rows[0]);
   } catch (error) {
     console.error('Error getting tournament by id:', error);
+    throw error;
+  }
+}
+
+export async function updateTournament(id: string, updates: any) {
+  const pool = getPool();
+  
+  try {
+    // Get current tournament
+    const currentTournament = await getTournamentById(id);
+    if (!currentTournament) return null;
+
+    // Update the tournament using actual schema
+    await pool.query(`
+      UPDATE tournaments 
+      SET name = $1, location = $2, description = $3, "createdBy" = $4, "updatedAt" = CURRENT_TIMESTAMP
+      WHERE id = $5
+    `, [
+      updates.name || currentTournament.name,
+      updates.location || currentTournament.location,
+      updates.description || currentTournament.description,
+      updates.createdBy || currentTournament.user?.id || 'system-user',
+      id
+    ]);
+
+    // Return updated tournament
+    return await getTournamentById(id);
+  } catch (error) {
+    console.error('Error updating tournament:', error);
     throw error;
   }
 }
@@ -421,8 +457,8 @@ function formatTournament(row: any) {
     overallRating: avgRating,
     user: {
       id: row.createdBy || 'system-user',
-      name: 'Tournament Creator',
-      email: 'creator@example.com'
+      name: row.creator_name || 'Unknown User',
+      email: row.creator_email || 'unknown@example.com'
     },
     _count: { reviews: row.review_count ? parseInt(row.review_count) : 0 },
     // Add empty reviews array for compatibility

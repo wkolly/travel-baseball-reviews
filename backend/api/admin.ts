@@ -5,6 +5,7 @@ import {
   createTeam, 
   updateTeam, 
   deleteTeam, 
+  updateTournament,
   deleteTournament,
   approveTeam, 
   rejectTeam,
@@ -510,26 +511,27 @@ export default async function handler(req: any, res: any) {
       const tournamentIdMatch = url?.match(/\/admin\/tournaments\/([^\/\?]+)/);
       const tournamentId = tournamentIdMatch?.[1];
       
-      // Find and update the tournament
-      const tournamentIndex = tournamentsData.findIndex(t => t.id === tournamentId);
-      if (tournamentIndex !== -1) {
-        tournamentsData[tournamentIndex] = {
-          ...tournamentsData[tournamentIndex],
-          ...req.body,
-          updatedAt: new Date().toISOString()
-        };
+      try {
+        const updatedTournament = await updateTournament(tournamentId, req.body);
+        if (updatedTournament) {
+          return res.status(200).json({
+            success: true,
+            data: updatedTournament,
+            message: 'Tournament updated successfully'
+          });
+        }
         
-        return res.status(200).json({
-          success: true,
-          data: tournamentsData[tournamentIndex],
-          message: 'Tournament updated successfully'
+        return res.status(404).json({
+          success: false,
+          message: 'Tournament not found'
+        });
+      } catch (error) {
+        console.error('Error updating tournament:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Error updating tournament'
         });
       }
-      
-      return res.status(404).json({
-        success: false,
-        message: 'Tournament not found'
-      });
     }
 
     if (req.method === 'DELETE') {

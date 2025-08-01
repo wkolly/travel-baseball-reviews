@@ -103,12 +103,14 @@ const AdminDashboardPage: React.FC = () => {
     state: '',
     ageGroups: [] as string[],
     description: '',
-    contact: ''
+    contact: '',
+    createdBy: ''
   });
   const [tournamentEditForm, setTournamentEditForm] = useState({
     name: '',
     location: '',
-    description: ''
+    description: '',
+    createdBy: ''
   });
 
   // Redirect if not admin
@@ -150,6 +152,13 @@ const AdminDashboardPage: React.FC = () => {
     'admin-reviews',
     () => adminAPI.getAllReviews(),
     { enabled: activeTab === 'reviews' }
+  );
+
+  // Load all users for creator selection in edit modals
+  const { data: allUsersData } = useQuery(
+    'all-users-for-selection',
+    () => adminAPI.getUsers(),
+    { enabled: editingTeam !== null || editingTournament !== null }
   );
 
   const { data: pendingTeamsData, isLoading: pendingTeamsLoading } = useQuery(
@@ -282,6 +291,7 @@ const AdminDashboardPage: React.FC = () => {
   const tournaments: Tournament[] = tournamentsData?.data?.tournaments || [];
   const pendingTeams: Team[] = pendingTeamsData?.data?.teams || [];
   const reviews: AdminReview[] = reviewsData?.data?.reviews || [];
+  const allUsers: User[] = allUsersData?.data?.users || [];
 
   const handleApprove = (teamId: string) => {
     if (window.confirm('Are you sure you want to approve this team?')) {
@@ -323,7 +333,8 @@ const AdminDashboardPage: React.FC = () => {
       state: team.state,
       ageGroups: parsedAgeGroups,
       description: team.description || '',
-      contact: team.contact || ''
+      contact: team.contact || '',
+      createdBy: team.user.id || ''
     });
   };
 
@@ -353,7 +364,8 @@ const AdminDashboardPage: React.FC = () => {
     setTournamentEditForm({
       name: tournament.name,
       location: tournament.location,
-      description: tournament.description || ''
+      description: tournament.description || '',
+      createdBy: tournament.user.id || ''
     });
   };
 
@@ -950,6 +962,24 @@ const AdminDashboardPage: React.FC = () => {
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Created By</label>
+                  <select
+                    value={teamEditForm.createdBy}
+                    onChange={(e) => setTeamEditForm({...teamEditForm, createdBy: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select a user</option>
+                    {allUsers.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Change ownership of this team to another user
+                  </p>
+                </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <button
@@ -1004,6 +1034,24 @@ const AdminDashboardPage: React.FC = () => {
                     rows={3}
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Created By</label>
+                  <select
+                    value={tournamentEditForm.createdBy}
+                    onChange={(e) => setTournamentEditForm({...tournamentEditForm, createdBy: e.target.value})}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select a user</option>
+                    {allUsers.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Change ownership of this tournament to another user
+                  </p>
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">

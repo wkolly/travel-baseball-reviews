@@ -81,12 +81,12 @@ const TeamDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Back Button */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           to="/teams"
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+          className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Teams
@@ -94,28 +94,40 @@ const TeamDetailPage: React.FC = () => {
       </div>
 
       {/* Team Header */}
-      <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{team.name}</h1>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-8 mb-6 sm:mb-8">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 leading-tight">{team.name}</h1>
             
-            <div className="flex items-center text-gray-600 mb-4">
-              <MapPin className="h-6 w-6 mr-3" />
-              <span className="text-xl">{team.location}, {team.state}</span>
+            <div className="flex items-center text-gray-600 mt-2 sm:mt-4">
+              <MapPin className="h-4 w-4 sm:h-6 sm:w-6 mr-2 sm:mr-3 flex-shrink-0" />
+              <span className="text-base sm:text-xl">{team.location}, {team.state}</span>
             </div>
 
-            <div className="flex items-center text-gray-600 mb-6">
-              <Users className="h-5 w-5 mr-2" />
-              <span className="text-lg">Age Groups: {ageGroups.join(', ')}</span>
+            <div className="flex items-center text-gray-600 mt-2 sm:mt-4">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <span className="text-sm sm:text-lg">Age Groups: {ageGroups.join(', ')}</span>
             </div>
+          </div>
 
-            <div className="flex items-center space-x-6">
+          {/* Team Description */}
+          {team.description && (
+            <div className="pt-2">
+              <div className="p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-700 text-sm sm:text-base leading-relaxed break-words">{team.description}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Rating and Button Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
+            <div className="flex flex-col xs:flex-row xs:items-center gap-2 sm:gap-6">
               <div className="flex items-center">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-6 w-6 ${
+                      className={`h-4 w-4 sm:h-6 sm:w-6 ${
                         i < Math.floor(averageRating)
                           ? 'text-yellow-400 fill-current'
                           : 'text-gray-300'
@@ -123,92 +135,87 @@ const TeamDetailPage: React.FC = () => {
                     />
                   ))}
                 </div>
-                <span className="ml-3 text-lg text-gray-600">
+                <span className="ml-2 sm:ml-3 text-sm sm:text-lg text-gray-600">
                   {averageRating.toFixed(1)} out of 5
                 </span>
               </div>
-              <span className="text-lg text-gray-600">
+              <span className="text-sm sm:text-lg text-gray-600">
                 {reviews.length} reviews
               </span>
             </div>
-          </div>
 
-          <button
-            onClick={() => setShowReviewForm(!showReviewForm)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Write Review
-          </button>
+            <button
+              onClick={() => setShowReviewForm(!showReviewForm)}
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Write Review
+            </button>
+          </div>
         </div>
-
-        {/* Team Description */}
-        {team.description && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-gray-700 leading-relaxed">{team.description}</p>
-          </div>
-        )}
       </div>
 
       {/* Review Form */}
       {showReviewForm && (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Write a Review</h2>
-          <form onSubmit={handleSubmitReview} className="space-y-6">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">Write a Review</h2>
+          <form onSubmit={handleSubmitReview} className="space-y-4 sm:space-y-6">
             {/* Rating Categories */}
-            {[
-              { key: 'coaching_rating', label: 'Coaching Quality' },
-              { key: 'organization_rating', label: 'Team Organization' },
-              { key: 'value_rating', label: 'Value for Money' },
-              { key: 'playing_time_rating', label: 'Playing Time Fairness' }
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-                <div className="flex items-center space-x-1">
-                  {[1, 2, 3, 4, 5].map((rating) => (
-                    <button
-                      key={rating}
-                      type="button"
-                      onClick={() => handleRatingChange(key, rating)}
-                      className={`transition-colors ${
-                        rating <= Number(reviewForm[key as keyof typeof reviewForm])
-                          ? 'text-yellow-400'
-                          : 'text-gray-300 hover:text-yellow-400'
-                      }`}
-                    >
-                      <Star className="h-6 w-6 fill-current" />
-                    </button>
-                  ))}
-                  <span className="ml-2 text-sm text-gray-600">
-                    {reviewForm[key as keyof typeof reviewForm] || 0}/5
-                  </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { key: 'coaching_rating', label: 'Coaching Quality' },
+                { key: 'organization_rating', label: 'Team Organization' },
+                { key: 'value_rating', label: 'Value for Money' },
+                { key: 'playing_time_rating', label: 'Playing Time Fairness' }
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+                  <div className="flex items-center space-x-1">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <button
+                        key={rating}
+                        type="button"
+                        onClick={() => handleRatingChange(key, rating)}
+                        className={`transition-colors p-1 ${
+                          rating <= Number(reviewForm[key as keyof typeof reviewForm])
+                            ? 'text-yellow-400'
+                            : 'text-gray-300 hover:text-yellow-400'
+                        }`}
+                      >
+                        <Star className="h-5 w-5 sm:h-6 sm:w-6 fill-current" />
+                      </button>
+                    ))}
+                    <span className="ml-2 text-xs sm:text-sm text-gray-600">
+                      {reviewForm[key as keyof typeof reviewForm] || 0}/5
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
               <textarea
-                rows={4}
+                rows={3}
                 value={reviewForm.comment}
                 onChange={(e) => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 placeholder="Share your experience with this team..."
               />
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 type="submit"
                 disabled={createReviewMutation.isLoading || !reviewForm.coaching_rating}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 text-sm sm:text-base"
               >
                 {createReviewMutation.isLoading ? 'Submitting...' : 'Submit Review'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowReviewForm(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                className="w-full sm:w-auto px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
               >
                 Cancel
               </button>
@@ -218,8 +225,8 @@ const TeamDetailPage: React.FC = () => {
       )}
 
       {/* Reviews Section */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews ({reviews.length})</h2>
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+        <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Reviews ({reviews.length})</h2>
         
         {reviewsLoading ? (
           <div className="text-center py-8">

@@ -97,7 +97,11 @@ const TournamentDetailPage: React.FC = () => {
 
           {tournament.description && (
             <div className="pt-2">
-              <p className="text-gray-700 text-sm sm:text-lg leading-relaxed">{tournament.description}</p>
+              <div className="prose prose-sm sm:prose max-w-none">
+                <p className="text-gray-700 text-sm sm:text-base leading-relaxed break-words">
+                  {tournament.description}
+                </p>
+              </div>
             </div>
           )}
 

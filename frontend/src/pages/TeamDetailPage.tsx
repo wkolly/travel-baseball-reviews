@@ -3,10 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { MapPin, Star, Users, ArrowLeft, Plus } from 'lucide-react';
 import { useTeam } from '@/hooks/useTeams';
 import { useTeamReviews, useCreateReview } from '@/hooks/useReviews';
+import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 const TeamDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { isAuthenticated } = useAuth();
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState({
     coaching_rating: 0,
@@ -144,13 +146,28 @@ const TeamDetailPage: React.FC = () => {
               </span>
             </div>
 
-            <button
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Write Review
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Write Review
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Login to Write Review
+                </Link>
+                <p className="text-xs text-gray-500 text-center sm:text-left">
+                  Account required • One review per team
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

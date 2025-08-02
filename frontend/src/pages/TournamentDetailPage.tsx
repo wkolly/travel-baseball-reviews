@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { MapPin, Star, ArrowLeft, Plus } from 'lucide-react';
 import { tournamentsAPI, tournamentReviewsAPI } from '@/services/api';
 import { CreateTournamentReviewRequest } from '@travel-baseball/shared';
+import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface TournamentReview {
@@ -16,6 +17,7 @@ interface TournamentReview {
 
 const TournamentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewForm, setReviewForm] = useState<CreateTournamentReviewRequest>({
@@ -130,13 +132,28 @@ const TournamentDetailPage: React.FC = () => {
               </span>
             </div>
 
-            <button
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Write Review
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Write Review
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/login"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center text-sm sm:text-base"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Login to Write Review
+                </Link>
+                <p className="text-xs text-gray-500 text-center sm:text-left">
+                  Account required • One review per tournament
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

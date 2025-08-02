@@ -1,4 +1,4 @@
-import { createTeamReview, getReviewsByTeamId, getAllReviews, createTournamentReview, getReviewsByTournamentId, getAllTournamentReviews, initializeDatabase } from './postgres-db';
+import { createTeamReview, getReviewsByTeamId, getAllReviews, createTournamentReview, getReviewsByTournamentId, getAllTournamentReviews, initializeDatabase, extractUserIdFromToken } from './postgres-db';
 
 export default async function handler(req: any, res: any) {
   // Set CORS headers - allow multiple origins
@@ -61,6 +61,15 @@ export default async function handler(req: any, res: any) {
         // Initialize database
         await initializeDatabase();
         
+        // Extract user ID from authorization header - REQUIRED for reviews
+        const userId = extractUserIdFromToken(req.headers.authorization);
+        if (!userId) {
+          return res.status(401).json({
+            success: false,
+            message: 'Authentication required. Please log in to leave a review.'
+          });
+        }
+        
         const teamIdMatch = url?.match(/\/team-reviews\/([^\/\?]+)/) || url?.match(/team-reviews\?.*teamId=([^&]+)/) || url?.match(/\/reviews\/teams\/([^\/\?]+)/);
         const teamId = teamIdMatch?.[1];
         
@@ -71,9 +80,20 @@ export default async function handler(req: any, res: any) {
           });
         }
         
+        // Check if user already has a review for this team
+        const existingReviews = await getReviewsByTeamId(teamId);
+        const userHasReview = existingReviews.some(review => review.userId === userId);
+        
+        if (userHasReview) {
+          return res.status(409).json({
+            success: false,
+            message: 'You have already submitted a review for this team. Only one review per team per account is allowed.'
+          });
+        }
+        
         const reviewData = {
           teamId: teamId,
-          userId: req.body?.userId || null, // Can be null for anonymous reviews
+          userId: userId, // Now required from authentication
           coaching_rating: req.body?.coaching_rating,
           value_rating: req.body?.value_rating,
           organization_rating: req.body?.organization_rating,
@@ -82,7 +102,7 @@ export default async function handler(req: any, res: any) {
           comment: req.body?.comment
         };
         
-        console.log('Creating team review:', reviewData);
+        console.log('Creating team review for user:', userId);
         
         const newReview = await createTeamReview(reviewData);
         
@@ -126,6 +146,15 @@ export default async function handler(req: any, res: any) {
       }
 
       if (req.method === 'POST') {
+        // Extract user ID from authorization header - REQUIRED for reviews
+        const userId = extractUserIdFromToken(req.headers.authorization);
+        if (!userId) {
+          return res.status(401).json({
+            success: false,
+            message: 'Authentication required. Please log in to leave a review.'
+          });
+        }
+        
         const tournamentIdMatch = url?.match(/\/tournament-reviews\/(?:tournaments\/)?([^\/\?]+)/) || url?.match(/tournament-reviews\?.*tournamentId=([^&]+)/);
         const tournamentId = tournamentIdMatch?.[1];
         
@@ -136,14 +165,25 @@ export default async function handler(req: any, res: any) {
           });
         }
         
+        // Check if user already has a review for this tournament
+        const existingReviews = await getReviewsByTournamentId(tournamentId);
+        const userHasReview = existingReviews.some(review => review.userId === userId);
+        
+        if (userHasReview) {
+          return res.status(409).json({
+            success: false,
+            message: 'You have already submitted a review for this tournament. Only one review per tournament per account is allowed.'
+          });
+        }
+        
         const reviewData = {
           tournamentId: tournamentId,
-          userId: req.body?.userId || null, // Can be null for anonymous reviews
+          userId: userId, // Now required from authentication
           overall_rating: req.body?.overall_rating,
           comment: req.body?.comment
         };
         
-        console.log('Creating tournament review:', reviewData);
+        console.log('Creating tournament review for user:', userId);
         
         const newReview = await createTournamentReview(reviewData);
         

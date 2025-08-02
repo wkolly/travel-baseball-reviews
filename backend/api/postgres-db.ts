@@ -114,12 +114,36 @@ function formatTeam(row: any) {
     ageGroups = JSON.stringify(ageGroups);
   }
 
+  // Handle locations - parse JSON array and provide backwards compatibility
+  let locations = [];
+  let locationDisplay = row.location || 'Unknown';
+  
+  try {
+    if (row.location) {
+      // Try to parse as JSON array first
+      const parsed = JSON.parse(row.location);
+      if (Array.isArray(parsed)) {
+        locations = parsed;
+        locationDisplay = parsed.join(', '); // Display as comma-separated string
+      } else {
+        // Single location, convert to array
+        locations = [row.location];
+        locationDisplay = row.location;
+      }
+    }
+  } catch (error) {
+    // If parsing fails, treat as single location string
+    locations = [row.location || 'Unknown'];
+    locationDisplay = row.location || 'Unknown';
+  }
+
   const avgRating = row.average_rating ? parseFloat(row.average_rating) : 0;
 
   return {
     id: row.id,
     name: row.name,
-    location: row.location,
+    location: locationDisplay, // For backwards compatibility with existing UI
+    locations: locations, // New field for multiple locations
     state: row.state,
     ageGroups: ageGroups,
     description: row.description || '',
@@ -218,7 +242,16 @@ export async function createTeam(teamData: any, createdByUserId?: string) {
   const newTeam = {
     id: String(Date.now()),
     name: teamData.name || 'New Team',
-    location: teamData.location || 'Unknown',
+    location: (() => {
+      // Handle multiple locations - if array is provided, store as JSON, otherwise convert single location to array
+      if (Array.isArray(teamData.locations) && teamData.locations.length > 0) {
+        return JSON.stringify(teamData.locations);
+      } else if (teamData.location) {
+        return JSON.stringify([teamData.location]);
+      } else {
+        return JSON.stringify(['Unknown']);
+      }
+    })(),
     state: teamData.state || 'XX',
     ageGroups: JSON.stringify(Array.isArray(teamData.ageGroups) ? teamData.ageGroups : (teamData.ageGroups ? [teamData.ageGroups] : [])),
     description: teamData.description || null,  // Can be null
@@ -276,6 +309,17 @@ export async function updateTeam(id: string, updates: any) {
     const currentTeam = await getTeamById(id);
     if (!currentTeam) return null;
 
+    // Handle location updates - support both single location and multiple locations
+    const updatedLocation = (() => {
+      if (Array.isArray(updates.locations) && updates.locations.length > 0) {
+        return JSON.stringify(updates.locations);
+      } else if (updates.location) {
+        return JSON.stringify([updates.location]);
+      } else {
+        return currentTeam.location;
+      }
+    })();
+
     // Update the team using actual schema
     await pool.query(`
       UPDATE teams 
@@ -283,7 +327,7 @@ export async function updateTeam(id: string, updates: any) {
       WHERE id = $8
     `, [
       updates.name || currentTeam.name,
-      updates.location || currentTeam.location,
+      updatedLocation,
       updates.state || currentTeam.state,
       typeof updates.ageGroups === 'string' ? updates.ageGroups : JSON.stringify(updates.ageGroups || currentTeam.ageGroups),
       updates.description || currentTeam.description,

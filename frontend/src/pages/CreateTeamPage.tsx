@@ -24,6 +24,7 @@ const CreateTeamPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>(['']);
 
   const {
     register,
@@ -48,9 +49,17 @@ const CreateTeamPage: React.FC = () => {
       return;
     }
 
+    // Filter out empty locations
+    const validLocations = locations.filter(loc => loc.trim() !== '');
+    if (validLocations.length === 0) {
+      toast.error('Please add at least one location');
+      return;
+    }
+
     const teamData = {
       ...data,
       ageGroups: selectedAgeGroups,
+      locations: validLocations,
     };
 
     createTeamMutation.mutate(teamData);
@@ -62,6 +71,24 @@ const CreateTeamPage: React.FC = () => {
         ? prev.filter(ag => ag !== ageGroup)
         : [...prev, ageGroup].sort()
     );
+  };
+
+  const handleLocationChange = (index: number, value: string) => {
+    setLocations(prev => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
+  const addLocation = () => {
+    setLocations(prev => [...prev, '']);
+  };
+
+  const removeLocation = (index: number) => {
+    if (locations.length > 1) {
+      setLocations(prev => prev.filter((_, i) => i !== index));
+    }
   };
 
   const handleCancel = () => {
@@ -118,27 +145,43 @@ const CreateTeamPage: React.FC = () => {
               )}
             </div>
 
-            {/* Location */}
+            {/* Locations */}
             <div>
-              <label htmlFor="location" className="form-label">
-                Location (City) *
+              <label className="form-label">
+                Locations (Cities) *
               </label>
-              <input
-                {...register('location', {
-                  required: 'Location is required',
-                  minLength: {
-                    value: 2,
-                    message: 'Location must be at least 2 characters',
-                  },
-                })}
-                type="text"
-                id="location"
-                className="form-input"
-                placeholder="Enter city name"
-              />
-              {errors.location && (
-                <p className="form-error">{errors.location.message}</p>
-              )}
+              <p className="text-sm text-gray-600 mb-3">
+                Add all cities where your team operates or practices.
+              </p>
+              <div className="space-y-2">
+                {locations.map((location, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => handleLocationChange(index, e.target.value)}
+                      className="form-input flex-1"
+                      placeholder={`Enter city name ${index + 1}`}
+                    />
+                    {locations.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeLocation(index)}
+                        className="px-3 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addLocation}
+                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                >
+                  + Add another location
+                </button>
+              </div>
             </div>
 
             {/* State */}

@@ -163,11 +163,12 @@ const TournamentsPage: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-blue-900 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-1">
                 Host tournaments?
               </h3>
               <p className="text-blue-700 text-sm sm:text-base">
-                List your tournaments and help families find great baseball events in their area.
+                <span className="sm:hidden">Help families find your events.</span>
+                <span className="hidden sm:inline">List your tournaments and help families find great baseball events in their area.</span>
               </p>
             </div>
             <div className="flex gap-2 sm:ml-4 sm:flex-shrink-0">
